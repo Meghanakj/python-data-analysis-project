@@ -1,8 +1,6 @@
 
-while a<7:
-      print(a)
-      a,b=b,a+b;
-f=5
+print("a")
+
 print(f"value of f is {f}")
 class Student:
       def __init__(self,name,department):
