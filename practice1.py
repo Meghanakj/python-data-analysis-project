@@ -10,7 +10,7 @@ class Student:
             self.grd.append(grade)
 s1=Student("Meghana","ECE")
 print(f"{s1.name} and {s1.dept}")
-print("Today is my learning day")
+p
 
 l1=[1,2,3]
 
