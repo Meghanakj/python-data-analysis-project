@@ -4,12 +4,13 @@ data = {
     'Employee': ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', 'Grace'],
     'Salary': [50000, 60000, 45000, 52000, 61000, 47000, 58000],
 }
-df=pd.DataFrame(data)
+data[1,2,3]
+# df=pd.DataFrame(data)
 # print(df)
 df_loc=df.set_index("Salary")
 # print(df_loc.loc[50000])
 df_average=df.groupby("Department")#["Salary"].mean()
-print(df_average)
+# print(df_average)
 data1 = {
     'Product': ['Laptop', 'Phone', 'Tablet', 'Monitor', 'Keyboard'],
     'Price': [1200, 700, 300, 250, 100],
