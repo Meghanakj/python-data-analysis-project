@@ -1,0 +1,106 @@
+------------------------------------
+./kubectl exec -it esrally-benchmark -n dpsdh-elk bash
+ls
+cd venv
+ls cd bin
+
+
+
+--------------------------------------------------
+kubectl get ns
+kubectl get pods -n seas-elastic-qa
+kubectl logs logstash-chart-logstash-0 -n seas-elastic-qa : it will show the all records like below
+{
+            "updatedBy" => "LLMTOT_546_2",
+       "managementArea" => "Greenville-Tennessee",
+    "serviceLocationID" => "4788076",
+          "updatedDate" => "2024-10-08T07:28:31.252697211Z",
+               "region" => "Mid-South"
+}
+{
+            "updatedBy" => "LLMTOT_546_2",
+       "managementArea" => "Alabama-Georgia",
+    "serviceLocationID" => "4788079",
+          "updatedDate" => "2024-10-08T07:28:31.252723894Z",
+               "region" => "Southeast"
+}
+
+kubectl exec -it logstash-chart-logstash-0 -n seas-elastic-qa bash : to open all file in logstash
+helm list -n seas-elastic-qa is not working
+kubectl delete pod logstash-chart-logstash-0 -n seas-elastic-qa 
+kubectl get pods -n seas-elastic-qa
+kubectl logs logstash-chart-logstash-0 -n seas-elastic-qa ------- it will show all records {
+wc -l region1.txt   -----it will show the total count in the file
+
+---get secrets
+cd bin
+ls
+give kuberneets command as per environment(use chalk page to find kubectl env login cmd)
+give password
+./kubectl get ns        #will find list of all cluster 
+ 
+./kubectl get secrets -n sosh-monitoring-uat       ----------here I selected sosh-uat 
+./kubectl get secrets -n sosh-poc-dev  # to open list of sosh-poc-dev   ------- this for dev env, need to login to dev Env check for respective namespace having es
+        
+./kubectl get secrets sosh-poc-elastic-dev-es-elastic-user -n sosh-poc-dev -o yaml    #this gives passwros it is encoded with base64 : decode password
+./kubectl get secrets sosh-monitoring-elastic-uat-es-elastic-user -n sosh-monitoring-uat -o yaml
+./kubectl get secrets seas-elastic-dev-es-elastic-user -n seas-elastic-dev -o yaml
+./kubectl get secrets seas-elastic-qa-eck-es-elastic-use -n seas-elastic-qa -o yaml
+./kubectl get secrets sosh-poc-elastic-dev-es-elastic-user -n sosh-poc-dev -o yaml
+
+
+seas-elastic-uat-es-elastic-user
+./kubectl get secrets -n foa-elastic-dev 
+./kubectl get secrets foa-elastic-dev-es-elastic-user -n foa-elastic-dev -o yaml
+./kubectl get pods -n foa-elastic-dev
+
+
+
+https://chalk.charter.com/display/ITSDDM/ITDP+SDHSearch+Cluster+WebUI+Links : chalk page link
+31st decembet: got know about how to deploy yaml file : 
+--------first login to cluster-name
+
+./helm.exe ls -n seas-elastic-dev
+./kubectl get deployment seas-elastic-dev
+./kubectl get deamonset seas-elastic-dev
+./kubectl delete ns spc-monitoring-qa  --delete namespace
+--------first login to cluster-name
+open vshpere in vscode and open terminal
+cd bin
+ls
+.\kubectl vsphere login --server=10.27.64.2 --vsphere-username p3261865adm --tanzu-kubernetes-cluster-name cdp-az05-seasd-s-dev5-clstr --tanzu-kubernetes-cluster-namespace cdp-az05-se
+asd-s-dev5-ns --insecure-skip-tls-verify
+login with adm password
+./kubectl get ns    (here I am trying to deploy yaml file to sosh-poc-dev)
+./kubectl get pods -n sosh-poc-dev
+./kubectl get deployment -n sosh-poc-dev               (first get deployment details in sosh-poc-dev namespace)
+./kubectl delete deployment enterprise-search-quickstart-ent -n sosh-poc-dev
+./kubectl get deployment -n sosh-poc-dev      (again checking list of pod to confirm enterprise-search-quickstart-ent is deleted or not)
+./kubectl get pods -n sps-elastic-dev
+./kubectl describe pod enterprise-search-quickstart-ent-5b56cfddcb-w4vfn -n sosh-poc-dev
+./kubectl logs logstash-ls-0 -n sosh-monitoring-dev            -----this is for get logs
+
+
+---------------------------------
+./kubectl get ns
+./kubectl get pods -n sps-elastic-dev   
+./kubectl get vs -n spc-elastic-dev  //VirtualService
+./kubectl logs spc-elastic-dev-es-master-0 -n spc-elastic-dev
+./kubectl get pv -n spc-elastic-dev   //PersistentVolume
+./kubectl describe pv <pv-name>
+./kubectl get svc -n sps-elastic-dev    /service
+
+------------------------------------------
+./kubectl get ns 
+./kubectl get pods -n sps-elastic-dev
+./kubectl get configmap synonym -n seas-elastic-dev
+./kubectl describe pod sps-elastic-dev-es-data-0 -n sps-elastic-dev
+
+-----------------------
+istio cmd
+./kubectl get gateway spcelk-gateway -n istio-ingress -o yaml   
+./kubectl get gateway -n istio-ingress
+./kubectl get vs -n spc-elastic-qa
+./kubectl get gateway spcelk-gateway -n istio-ingress -o yaml
+./kubectl get secrets spcelk-tls -n istio-ingress -o yaml
+./kubectl describe svc spc-kibana-qa-kb-http -n spc-elastic-qa

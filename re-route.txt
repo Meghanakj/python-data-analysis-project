@@ -1,0 +1,159 @@
+POST /_cluster/reroute?metric=none
+{
+  "commands": [
+    {
+      "move": {
+        "index": "test", "shard": 0,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4", "to_node": "sosh-monitoring-elastic-dev-es-data-2"
+      }
+    },
+    {
+      "allocate_replica": {
+        "index": "test", "shard": 1,
+        "node": "node3"
+      }
+    }
+  ]
+}
+
+
+//main
+//1
+POST /_cluster/reroute
+{
+  "commands": [
+    {
+      "move": {
+        "index": ".ds-logs-kubernetes.container_logs-default-2025.03.12-000299",
+        "shard": 0,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"                 }
+    }
+}
+]
+}
+
+///2
+POST /_cluster/reroute
+{
+  "commands": [
+    {
+      "move": {
+        "index": ".ds-logs-kubernetes.container_logs-default-2025.03.13-000312",
+        "shard": 0,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"                 }
+    }
+}
+]
+}
+
+
+////
+
+
+    {
+      "move": {
+        "index": ".ds-logs-kubernetes.container_logs-default-2025.03.13-000312",
+        "shard": 1,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"
+      }
+    },
+    {
+      "move": {
+        "index": "sps_app_logs_v4-000054",
+        "shard": 1,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"
+      }
+    },
+ {
+      "move": {
+        "index": ".ds-logs-kubernetes.container_logs-default-2025.03.13-000306",
+        "shard": 1,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"
+      }
+    },
+ {
+      "move": {
+        "index": ".ds-logs-kubernetes.container_logs-default-2025.03.13-000303",
+        "shard": 1,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"
+      }
+    },
+{
+      "move": {
+        "index": ".ds-logs-kubernetes.container_logs-default-2025.03.13-000310",
+        "shard": 1,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"
+      }
+    },
+{
+      "move": {
+        "index": ".ds-logs-kubernetes.container_logs-default-2025.03.14-000314",
+        "shard": 1,
+        "from_node": "sosh-monitoring-elastic-dev-es-data-4",
+        "to_node": "sosh-monitoring-elastic-dev-es-data-2"
+      }
+    }
+
+  ]
+}
+
+////exec input plugins
+
+input {
+  exec {
+    command => "echo 'hi!'"  # Runs every 30 seconds
+    interval => 30
+  }
+}
+filter {
+  mutate {
+    add_field => { "id" => "%{host}-%{sequence}" }  # Generate an ID dynamically
+  }
+}
+output {
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+    index => "csv-index"
+  }
+  stdout {
+    codec => rubydebug
+  }
+}
+
+------open terminal
+curl -X GET http://localhost:9200/user
+curl -X GET http://localhost:9200/_cat/indices?v --if index is exists or not
+curl -X GET http://localhost:9200/user?pretty      -index details
+curl -X GET "http://localhost:9200/user/_search?pretty" -to fetch all data from user index
+
+curl -X GET "http://localhost:9200/user/_mapping?pretty"
+{
+  "user" : {
+    "mappings" : {
+      "properties" : {
+        "age" : {
+          "type" : "integer"
+        },
+        "name" : {
+          "type" : "text"
+        }
+      }
+    }
+  }
+}
+
+{
+ "query": "FROM user | WHERE age < 20 | SORT age DESC"
+}
+{
+  "query": "FROM user | WHERE age < 20 OR name == \"Meghana\" | SORT age DESC"
+}
+
+

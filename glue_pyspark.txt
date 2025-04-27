@@ -1,0 +1,1451 @@
+from pyspark.sql.functions import col,year,month,dayofmonth,hour,minute,second,date_format
+
+
+1. dyf = glueContext.create_dynamic_frame_from_options(
+    connection_type="s3",
+    connection_options={"paths": ["s3://gl1megha/categories.csv"]},
+    format="csv",
+    format_options={"withHeader": True}
+)
+df = dyf.toDF()
+df.show()
+df_renamed = df.withColumnRenamed('id', 'c_id')
+df_renamed.show()
+df_filter=df_renamed.filter(col('name').like('H%'))
+df_filter.show()
+
+
+df_year=df_renamed.withColumn('year',year(col('creationAt'))) \
+                .withColumn('month',month(col('creationAt'))) \
+                  .withColumn('date',dayofmonth(col('creationAt')))\
+                  .withColumn('hour',hour(col('creationAt'))) \
+                    .withColumn('minute',minute(col('creationAt'))) \
+                     .withColumn('second',second(col('creationAt'))) 
+
+         
+
+df_year.show()
+
+
+
+
+
+output:
++----+-------------------+--------------------+--------------------+--------------------+----+-----+----+----+------+------+
+|c_id|               name|               image|          creationAt|           updatedAt|year|month|date|hour|minute|second|
++----+-------------------+--------------------+--------------------+--------------------+----+-----+----+----+------+------+
+|   1|            Clothes|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-02T21:31:...|2024|    5|   2|  21|    31|    27|
+|   2|         Electronic|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-03T08:56:...|2024|    5|   2|  21|    31|    27|
+|   3|             Prueba|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-03T03:23:...|2024|    5|   2|  21|    31|    27|
+|   4|       Change title|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-03T07:07:...|2024|    5|   2|  21|    31|    27|
+|   5|      Miscellaneous|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-02T21:31:...|2024|    5|   2|  21|    31|    27|
+|   6|   MohaJacoCategory|https://encrypted...|2024-05-02T21:37:...|2024-05-02T21:37:...|2024|    5|   2|  21|    37|     7|
+|   7|        HugoChingon|       delorean.jpeg|2024-05-02T21:40:...|2024-05-02T21:40:...|2024|    5|   2|  21|    40|    44|
+|   8|        HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|2024|    5|   2|  21|    42|    27|
+|   9|           HugoSexy|https://pbs.twimg...|2024-05-02T21:42:...|2024-05-02T21:54:...|2024|    5|   2|  21|    42|    28|
+|  10|        HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|2024|    5|   2|  21|    42|    42|
+|  12|        HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|2024|    5|   2|  21|    42|    44|
+|  13|        HugoChingon|       delorean.jpeg|2024-05-02T21:44:...|2024-05-02T21:44:...|2024|    5|   2|  21|    44|     6|
+|  25|           games123|https://www.googl...|2024-05-03T02:24:...|2024-05-03T02:24:...|2024|    5|   3|   2|    24|    18|
+|  26|          games1234|https://teknoscen...|2024-05-03T02:25:...|2024-05-03T02:25:...|2024|    5|   3|   2|    25|    29|
+|  28|                 R3|https://cdni.auto...|2024-05-03T02:32:...|2024-05-03T02:32:...|2024|    5|   3|   2|    32|     0|
+|  33|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024|    5|   3|   7|    26|    25|
+|  34|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024|    5|   3|   7|    26|    25|
+|  35|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024|    5|   3|   7|    26|    25|
+|  36|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024|    5|   3|   7|    26|    25|
+|  37|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024|    5|   3|   7|    26|    25|
++----+-------------------+--------------------+--------------------+--------------------+----+-----+----+----+------+------+
+only showing top 20 rows
+
+
+2.  like by H
++----+-----------+--------------------+--------------------+--------------------+
+|c_id|       name|               image|          creationAt|           updatedAt|
++----+-----------+--------------------+--------------------+--------------------+
+|   7|HugoChingon|       delorean.jpeg|2024-05-02T21:40:...|2024-05-02T21:40:...|
+|   8|HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|
+|   9|   HugoSexy|https://pbs.twimg...|2024-05-02T21:42:...|2024-05-02T21:54:...|
+|  10|HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|
+|  12|HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|
+|  13|HugoChingon|       delorean.jpeg|2024-05-02T21:44:...|2024-05-02T21:44:...|
++----+-----------+--------------------+--------------------+--------------------+
+
+4.des_tab=df_renamed.describe()
+des_tab.show()
++-------+-----------------+------------+--------------------+--------------------+--------------------+
+|summary|             c_id|        name|               image|          creationAt|           updatedAt|
++-------+-----------------+------------+--------------------+--------------------+--------------------+
+|  count|              135|         135|                 135|                 135|                 135|
+|   mean|             83.4|        null|                null|                null|                null|
+| stddev|41.83499927308599|        null|                null|                null|                null|
+|    min|                1|Change title|       delorean.jpeg|2024-05-02T21:31:...|2024-05-02T21:31:...|
+|    max|               99|   games1234|https://www.googl...|2024-05-03T07:30:...|2024-05-03T08:56:...|
++-------+-----------------+------------+--------------------+--------------------+--------------------+
+
+
+3. ex_date=df_renamed.withColumn('c_date',date_format('creationAt','yyyy-mm-dd'))\
+              .withColumn('c_time',date_format('creationAt','HH-MM-SS'))
+# ex_date.show()
+ex_date_update=ex_date.withColumn('u_date',date_format('updatedAt','yyyy-mm-dd'))\
+              .withColumn('u_time',date_format('updatedAt','HH-MM-SS'))
+ex_date_update.show()
+
++----+-------------------+--------------------+--------------------+--------------------+----------+--------+----------+--------+
+|c_id|               name|               image|          creationAt|           updatedAt|    c_date|  c_time|    u_date|  u_time|
++----+-------------------+--------------------+--------------------+--------------------+----------+--------+----------+--------+
+|   1|            Clothes|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-02T21:31:...|2024-31-02|21-05-00|2024-31-02|21-05-00|
+|   2|         Electronic|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-03T08:56:...|2024-31-02|21-05-00|2024-56-03|08-05-00|
+|   3|             Prueba|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-03T03:23:...|2024-31-02|21-05-00|2024-23-03|03-05-00|
+|   4|       Change title|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-03T07:07:...|2024-31-02|21-05-00|2024-07-03|07-05-00|
+|   5|      Miscellaneous|https://i.imgur.c...|2024-05-02T21:31:...|2024-05-02T21:31:...|2024-31-02|21-05-00|2024-31-02|21-05-00|
+|   6|   MohaJacoCategory|https://encrypted...|2024-05-02T21:37:...|2024-05-02T21:37:...|2024-37-02|21-05-00|2024-37-02|21-05-00|
+|   7|        HugoChingon|       delorean.jpeg|2024-05-02T21:40:...|2024-05-02T21:40:...|2024-40-02|21-05-00|2024-40-02|21-05-00|
+|   8|        HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|2024-42-02|21-05-00|2024-42-02|21-05-00|
+|   9|           HugoSexy|https://pbs.twimg...|2024-05-02T21:42:...|2024-05-02T21:54:...|2024-42-02|21-05-00|2024-54-02|21-05-00|
+|  10|        HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|2024-42-02|21-05-00|2024-42-02|21-05-00|
+|  12|        HugoChingon|       delorean.jpeg|2024-05-02T21:42:...|2024-05-02T21:42:...|2024-42-02|21-05-00|2024-42-02|21-05-00|
+|  13|        HugoChingon|       delorean.jpeg|2024-05-02T21:44:...|2024-05-02T21:44:...|2024-44-02|21-05-00|2024-44-02|21-05-00|
+|  25|           games123|https://www.googl...|2024-05-03T02:24:...|2024-05-03T02:24:...|2024-24-03|02-05-00|2024-24-03|02-05-00|
+|  26|          games1234|https://teknoscen...|2024-05-03T02:25:...|2024-05-03T02:25:...|2024-25-03|02-05-00|2024-25-03|02-05-00|
+|  28|                 R3|https://cdni.auto...|2024-05-03T02:32:...|2024-05-03T02:32:...|2024-32-03|02-05-00|2024-32-03|02-05-00|
+|  33|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  34|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  35|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  36|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  37|My Perfect Category|https://t4.ftcdn....|2024-05-03T07:26:...|2024-05-03T07:26:...|2024-26-03|07-05-00|2024-26-03|07-05-00|
++----+-------------------+--------------------+--------------------+--------------------+----------+--------+----------+--------+
+only showing top 20 rows
+
+4. drop creationAt and updateAT
+
+df_drop=ex_date_update.drop('creationAt','updatedAt')
+df_drop.show()
+
++----+-------------------+--------------------+----------+--------+----------+--------+
+|c_id|               name|               image|    c_date|  c_time|    u_date|  u_time|
++----+-------------------+--------------------+----------+--------+----------+--------+
+|   1|            Clothes|https://i.imgur.c...|2024-31-02|21-05-00|2024-31-02|21-05-00|
+|   2|         Electronic|https://i.imgur.c...|2024-31-02|21-05-00|2024-56-03|08-05-00|
+|   3|             Prueba|https://i.imgur.c...|2024-31-02|21-05-00|2024-23-03|03-05-00|
+|   4|       Change title|https://i.imgur.c...|2024-31-02|21-05-00|2024-07-03|07-05-00|
+|   5|      Miscellaneous|https://i.imgur.c...|2024-31-02|21-05-00|2024-31-02|21-05-00|
+|   6|   MohaJacoCategory|https://encrypted...|2024-37-02|21-05-00|2024-37-02|21-05-00|
+|   7|        HugoChingon|       delorean.jpeg|2024-40-02|21-05-00|2024-40-02|21-05-00|
+|   8|        HugoChingon|       delorean.jpeg|2024-42-02|21-05-00|2024-42-02|21-05-00|
+|   9|           HugoSexy|https://pbs.twimg...|2024-42-02|21-05-00|2024-54-02|21-05-00|
+|  10|        HugoChingon|       delorean.jpeg|2024-42-02|21-05-00|2024-42-02|21-05-00|
+|  12|        HugoChingon|       delorean.jpeg|2024-42-02|21-05-00|2024-42-02|21-05-00|
+|  13|        HugoChingon|       delorean.jpeg|2024-44-02|21-05-00|2024-44-02|21-05-00|
+|  25|           games123|https://www.googl...|2024-24-03|02-05-00|2024-24-03|02-05-00|
+|  26|          games1234|https://teknoscen...|2024-25-03|02-05-00|2024-25-03|02-05-00|
+|  28|                 R3|https://cdni.auto...|2024-32-03|02-05-00|2024-32-03|02-05-00|
+|  33|My Perfect Category|https://t4.ftcdn....|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  34|My Perfect Category|https://t4.ftcdn....|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  35|My Perfect Category|https://t4.ftcdn....|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  36|My Perfect Category|https://t4.ftcdn....|2024-26-03|07-05-00|2024-26-03|07-05-00|
+|  37|My Perfect Category|https://t4.ftcdn....|2024-26-03|07-05-00|2024-26-03|07-05-00|
++----+-------------------+--------------------+----------+--------+----------+--------+
+only showing top 20 rows
+
+day 2 work 
+from pyspark.sql.functions import date_format,lit,array,count
+
+1. dyf = glueContext.create_dynamic_frame_from_options(
+    connection_type="s3",
+    connection_options={"paths": ["s3://tuework/customer_order.csv"]},
+    format="csv",
+    format_options={"withHeader": True}
+)
+df = dyf.toDF()
+df.show()
+# df_agg=df.groupBy('customer_id','order_id').agg(max('total_amount').alias('max_amount')) \               
+#           .orderBy('customer_id','max_amount')
+# df_agg.show()
+df_agg = df.groupBy('customer_id', 'order_id').agg(F.max('total_amount').alias('max_amount')) \
+            .orderBy('max_amount')
+df_agg.show()
+
++-----------+--------+------------+----------+
+|customer_id|order_id|total_amount|0rder_date|
++-----------+--------+------------+----------+
+|         c1|       1|         500|24-08-2002|
+|         c2|       2|       76.37|27-08-2022|
+|         c3|       3|         981|24-08-2022|
+|         c4|       4|      750.84|26-08-2022|
+|         c5|       5|      750.84|27-08-2022|
+|         c6|       6|      372.51|25-08-2022|
++-----------+--------+------------+----------+
+
++-----------+--------+----------+
+|customer_id|order_id|max_amount|
++-----------+--------+----------+
+|         c6|       6|    372.51|
+|         c1|       1|       500|
+|         c4|       4|    750.84|
+|         c5|       5|    750.84|
+|         c2|       2|     76.37|
+|         c3|       3|       981|
++-----------+--------+----------+
+2.
+dyf1 = glueContext.create_dynamic_frame_from_options(
+    connection_type="s3",
+    connection_options={"paths": ["s3://tuework/categories.csv"]},
+    format="csv",
+    format_options={"withHeader": True}
+)
+df1 = dyf1.toDF()
+# df1.show()
+df_date=df1.withColumn("c_date",date_format('creationAt','yyyy-mm-dd'))\
+             .withColumn("u_date",date_format('updatedAt','yyyy-mm-dd')) \
+             .drop('creationAt','updatedAt','image')
+
+df_date.show()
+
++---+-------------------+----------+----------+
+| id|               name|    c_date|    u_date|
++---+-------------------+----------+----------+
+|  1|            Clothes|2024-31-02|2024-31-02|
+|  2|         Electronic|2024-31-02|2024-56-03|
+|  3|             Prueba|2024-31-02|2024-23-03|
+|  4|       Change title|2024-31-02|2024-07-03|
+|  5|      Miscellaneous|2024-31-02|2024-31-02|
+|  6|   MohaJacoCategory|2024-37-02|2024-37-02|
+|  7|        HugoChingon|2024-40-02|2024-40-02|
+|  8|        HugoChingon|2024-42-02|2024-42-02|
+|  9|           HugoSexy|2024-42-02|2024-54-02|
+| 10|        HugoChingon|2024-42-02|2024-42-02|
+| 12|        HugoChingon|2024-42-02|2024-42-02|
+| 13|        HugoChingon|2024-44-02|2024-44-02|
+| 25|           games123|2024-24-03|2024-24-03|
+| 26|          games1234|2024-25-03|2024-25-03|
+| 28|                 R3|2024-32-03|2024-32-03|
+| 33|My Perfect Category|2024-26-03|2024-26-03|
+| 34|My Perfect Category|2024-26-03|2024-26-03|
+| 35|My Perfect Category|2024-26-03|2024-26-03|
+| 36|My Perfect Category|2024-26-03|2024-26-03|
+| 37|My Perfect Category|2024-26-03|2024-26-03|
++---+-------------------+----------+----------+
+only showing top 20 rows
+
+5. reading second csv file
+dyf1 = glueContext.create_dynamic_frame_from_options(
+    connection_type="s3",
+    connection_options={"paths": ["s3://gl1megha/products (1) (1).csv"]},
+    format="csv",
+    format_options={"withHeader": True}
+)
+df1 = dyf1.toDF()
+df1.show()
+
+#joining two table
+df_join=df1.join(df,on='id', how='inner')\
+          .show()
+
+#6. counting name's
+
+df_ct=df_date.groupBy('name').agg(F.count('name').alias('cat_name')) \
+               .orderBy('cat_name')
+df_ct.show()
++-------------------+--------+
+|               name|cat_name|
++-------------------+--------+
+|          games1234|       1|
+|           games123|       1|
+|      Miscellaneous|       1|
+|           HugoSexy|       1|
+|             Prueba|       1|
+|       Change title|       1|
+|   MohaJacoCategory|       1|
+|                 R3|       1|
+|         Electronic|       1|
+|            Clothes|       1|
+|        HugoChingon|       5|
+|My Perfect Category|     120|
++-------------------+--------+
+
+#7. 
+dyf1 = glueContext.create_dynamic_frame_from_options(
+    connection_type="s3",
+    connection_options={"paths": ["s3://tuework/categories.csv"]},
+    format="csv",
+    format_options={"withHeader": True}
+)
+df1 = dyf1.toDF()
+# df1.show()
+df_date=df1.withColumn("c_date",date_format('creationAt','yyyy-mm-dd'))\
+             .withColumn("u_date",date_format('updatedAt','yyyy-mm-dd')) \
+             .drop('creationAt','updatedAt','image')
+
+df_date.show()
+
++---+-------------------+----------+----------+
+| id|               name|    c_date|    u_date|
++---+-------------------+----------+----------+
+|  1|            Clothes|2024-31-02|2024-31-02|
+|  2|         Electronic|2024-31-02|2024-56-03|
+|  3|             Prueba|2024-31-02|2024-23-03|
+|  4|       Change title|2024-31-02|2024-07-03|
+|  5|      Miscellaneous|2024-31-02|2024-31-02|
+|  6|   MohaJacoCategory|2024-37-02|2024-37-02|
+|  7|        HugoChingon|2024-40-02|2024-40-02|
+|  8|        HugoChingon|2024-42-02|2024-42-02|
+|  9|           HugoSexy|2024-42-02|2024-54-02|
+| 10|        HugoChingon|2024-42-02|2024-42-02|
+| 12|        HugoChingon|2024-42-02|2024-42-02|
+| 13|        HugoChingon|2024-44-02|2024-44-02|
+| 25|           games123|2024-24-03|2024-24-03|
+| 26|          games1234|2024-25-03|2024-25-03|
+| 28|                 R3|2024-32-03|2024-32-03|
+| 33|My Perfect Category|2024-26-03|2024-26-03|
+| 34|My Perfect Category|2024-26-03|2024-26-03|
+| 35|My Perfect Category|2024-26-03|2024-26-03|
+| 36|My Perfect Category|2024-26-03|2024-26-03|
+| 37|My Perfect Category|2024-26-03|2024-26-03|
++---+-------------------+----------+----------+
+
+#8
+
+df_dis=df_date.select('name').distinct() \
+             .orderBy('name',ascending=True)
+df_dis.show()
+df_ct=df_date.groupBy('name').agg(F.count('name').alias('cat_name')) \
+               .orderBy('cat_name')
+df_ct.show()
+
+
++-------------------+
+|               name|
++-------------------+
+|       Change title|
+|            Clothes|
+|         Electronic|
+|        HugoChingon|
+|           HugoSexy|
+|      Miscellaneous|
+|   MohaJacoCategory|
+|My Perfect Category|
+|             Prueba|
+|                 R3|
+|           games123|
+|          games1234|
++-------------------+
+
++-------------------+--------+
+|               name|cat_name|
++-------------------+--------+
+|          games1234|       1|
+|           games123|       1|
+|      Miscellaneous|       1|
+|           HugoSexy|       1|
+|             Prueba|       1|
+|       Change title|       1|
+|   MohaJacoCategory|       1|
+|                 R3|       1|
+|         Electronic|       1|
+|            Clothes|       1|
+|        HugoChingon|       5|
+|My Perfect Category|     120|
++-------------------+--------+
+
+
+#day 3 
+price_values = [200, 300, 12, 34, 56, 67, 12, 200, 345, 89, 89, 4555, 567, 234, 67, 600, 600, 456, 2, 2, 55]
+add_col=df_date.withColumn("Price", array([lit(x) for x in price_values]))
+add_col.show()
+df_exp=add_col.withColumn('exploded_column', F.explode('Price')) \
+               .drop('Price')
+df_exp.show()
+df_exp.write \
+    .format("csv") \
+    .option("header", "true") \
+    .mode("overwrite") \
+    .save("s3://wed1/result/")
+
+
+df_lit=df_exp.select('name','id',concat('name',lit(','),'id').alias('com')).distinct()
+# df_lit.show()
+
+
++---+-------+----------+----------+---------------+
+| id|   name|    c_date|    u_date|exploded_column|
++---+-------+----------+----------+---------------+
+|  1|Clothes|2024-31-02|2024-31-02|            200|
+|  1|Clothes|2024-31-02|2024-31-02|            300|
+|  1|Clothes|2024-31-02|2024-31-02|             12|
+|  1|Clothes|2024-31-02|2024-31-02|             34|
+|  1|Clothes|2024-31-02|2024-31-02|             56|
+|  1|Clothes|2024-31-02|2024-31-02|             67|
+|  1|Clothes|2024-31-02|2024-31-02|             12|
+|  1|Clothes|2024-31-02|2024-31-02|            200|
+|  1|Clothes|2024-31-02|2024-31-02|            345|
+|  1|Clothes|2024-31-02|2024-31-02|             89|
+|  1|Clothes|2024-31-02|2024-31-02|             89|
+|  1|Clothes|2024-31-02|2024-31-02|           4555|
+|  1|Clothes|2024-31-02|2024-31-02|            567|
+|  1|Clothes|2024-31-02|2024-31-02|            234|
+|  1|Clothes|2024-31-02|2024-31-02|             67|
+|  1|Clothes|2024-31-02|2024-31-02|            600|
+|  1|Clothes|2024-31-02|2024-31-02|            600|
+|  1|Clothes|2024-31-02|2024-31-02|            456|
+|  1|Clothes|2024-31-02|2024-31-02|              2|
+|  1|Clothes|2024-31-02|2024-31-02|              2|
++---+-------+----------+----------+---------------+
+only showing top 20 rows
+
++-------------------+---+--------------------+
+|               name| id|                 com|
++-------------------+---+--------------------+
+|My Perfect Category| 45|My Perfect Catego...|
+|My Perfect Category| 50|My Perfect Catego...|
+|My Perfect Category| 53|My Perfect Catego...|
+|My Perfect Category| 69|My Perfect Catego...|
+|My Perfect Category| 70|My Perfect Catego...|
+|My Perfect Category| 74|My Perfect Catego...|
+|My Perfect Category| 78|My Perfect Catego...|
+|My Perfect Category| 83|My Perfect Catego...|
+|My Perfect Category| 97|My Perfect Catego...|
+|My Perfect Category| 99|My Perfect Catego...|
+|My Perfect Category|103|My Perfect Catego...|
+|My Perfect Category|111|My Perfect Catego...|
+|      Miscellaneous|  5|     Miscellaneous,5|
+|           games123| 25|         games123,25|
+|My Perfect Category| 62|My Perfect Catego...|
+|My Perfect Category|113|My Perfect Catego...|
+|My Perfect Category|115|My Perfect Catego...|
+|My Perfect Category|135|My Perfect Catego...|
+|My Perfect Category|150|My Perfect Catego...|
+|My Perfect Category| 55|My Perfect Catego...|
++-------------------+---+--------------------+
+only showing top 20 rows
+
+
+
+#day4 json reading and convert this to csv
+import json
+import csv
+dyf1 = glueContext.create_dynamic_frame_from_options(
+    connection_type="s3",
+    connection_options={"paths": ["s3://fridjson/events.json"]},
+    format="json",
+    format_options={"withHeader": True}
+)
+# dyf1.show()
+
+dyf1.printSchema()
+
+root
+|-- classification: string
+|-- name: string
+|-- end_date: string
+|-- identifiers: array
+|    |-- element: struct
+|    |    |-- scheme: string
+|    |    |-- identifier: string
+|-- id: string
+|-- start_date: string
+|-- organization_id: string
+
+
+from pyspark.sql.functions import explode
+df_flat = dyf1.toDF()
+# Show DataFrame
+df_flat.show()
+df_exploded = df_flat.select("*", explode("identifiers").alias("exploded_identifiers"))
+
+# Extract the fields from the exploded identifiers
+df_flattened = df_exploded.select(
+    "classification",
+    "name",
+    "end_date",
+    "id",
+    "start_date",
+    "organization_id",
+    "exploded_identifiers.scheme",
+    "exploded_identifiers.identifier"
+)
+print(df1.count())
+
+# Show the flattened DataFrame
+df_flattened.show()
+print(df_flattened.count())
+df_flattened.write \
+    .format("csv") \
+    .option("header", "true") \
+    .mode("overwrite") \
+    .save("s3://fridjson/result_faltten/")
+
++----------------+--------------------+--------+--------------------+--------+----------+---------------+
+|  classification|                name|end_date|         identifiers|      id|start_date|organization_id|
++----------------+--------------------+--------+--------------------+--------+----------+---------------+
+|general election|United States Hou...|    1900|[{wikidata, Q4450...|Q4450263|      1900|           null|
+|general election|United States Hou...|    1902|[{wikidata, Q4450...|Q4450540|      1902|           null|
+|general election|United States Hou...|    1904|[{wikidata, Q4450...|Q4450706|      1904|           null|
+|general election|United States Hou...|    1906|[{wikidata, Q4450...|Q4450517|      1906|           null|
+|general election|United States Hou...|    1908|[{wikidata, Q4450...|Q4450304|      1908|           null|
+|general election|United States Hou...|    1910|[{wikidata, Q4450...|Q4450180|      1910|           null|
+
+
+
++----------------+--------------------+--------+--------+----------+---------------+--------+----------+
+|  classification|                name|end_date|      id|start_date|organization_id|  scheme|identifier|
++----------------+--------------------+--------+--------+----------+---------------+--------+----------+
+|general election|United States Hou...|    1900|Q4450263|      1900|           null|wikidata|  Q4450263|
+|general election|United States Hou...|    1902|Q4450540|      1902|           null|wikidata|  Q4450540|
+|general election|United States Hou...|    1904|Q4450706|      1904|           null|wikidata|  Q4450706|
+|general election|United States Hou...|    1906|Q4450517|      1906|           null|wikidata|  Q4450517|
+|general election|United States Hou...|    1908|Q4450304|      1908|           null|wikidata|  Q4450304|
+
+project
+#task 1: replace null/blanck with 0
+from pyspark.sql.functions import col,when
+df = spark.read.format("csv").option("header","true").load("s3://country1/data_csv (1)/Country Quater Wise Visitors.csv")
+for col_name in df.columns:
+    df = df.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name)))
+df.show(64)
+df.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://country1/result2/")
+
+#Reading 4 csv file and fill null or blank with 0
+from pyspark.sql.functions import col,when
+#1file
+df1 = spark.read.format("csv").option("header","true").load("s3://wedcount/Country Quater Wise Visitors.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+       .dropDuplicates()
+# df1.show()
+# print(df1.count())
+# df1.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://wedcount/result1/")
+
+
+
+
+
+#Creating country_id and extracting only 2014 data from 2csv file
+#1st file
+from pyspark.sql.functions import monotonically_increasing_id
+df_with_id1 = df1.withColumn("country_id", monotonically_increasing_id()+1)
+df_select1 = df_with_id1.select("country_id","Country of Nationality","2014 1st quarter (Jan-March)",
+                        "2014 2nd quarter (Apr-June)", "2014 3rd quarter (July-Sep)", 
+                        "2014 4th quarter (Oct-Dec))")
+# df_select1.show()
+# print(df_select1.count())
+
+#2nd file
+df_with_id2 = df2.withColumn("country_id", monotonically_increasing_id()+1) 
+# df_with_id2.show()
+# print(df_with_id2.count())
+# df_with_id2.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://wedcount/file2_id/")   
+df_select2 =  spark.read.format("csv").option("header","true").load("s3://wedcount/file2_id/part-00000-e9c1b8a1-a65d-4fb6-87fb-49e21840bbcd-c000.csv")\
+          .select("country_id","2014 0-14", "2014 15-24", "2014 25-34",
+                       "2014 35-44", "2014 45-54", "2014 55-64", "2014 65 AND ABOVE")
+# df_select2.show()
+# print(df_select2.count())
+
+join_1_2=df_select1.join(df_select2,"country_id", "inner") \
+              .dropDuplicates().orderBy("country_id")
+# join_1_2.show()
+# print(join_1_2.count())
+
+#joining 4th country gender file to 1 and 2nd file
+df_with_id3 = df3.withColumn("country_id", monotonically_increasing_id()+1) \
+          .select("country_id","2014 Male","2014 Female")
+# df_with_id3.show()
+# print(df_with_id3.count())
+gender_join=df_with_id3.join(join_1_2,"country_id","inner").orderBy("country_id") \
+                .dropDuplicates()
+# gender_join.show()
+# print(gender_join.count())
+
+
+#joining year visitor 
+df_with_id4 = df4.withColumn("country_id", monotonically_increasing_id()+1) \
+          .select("country_id","2014")
+# df_with_id4.show()
+# print(df_with_id4.count())
+join_yr=gender_join.join(df_with_id4,"country_id" ,"inner") \
+               .dropDuplicates()
+# join_yr.show()
+# print(join_yr.count())
+
+#calculate percentage to all 2014 columns
+from pyspark.sql import functions as F
+#round numbers
+from pyspark.sql.functions import round
+column_pairs = [
+    "2014 1st quarter (Jan-March)","2014 2nd quarter (Apr-June)","2014 3rd quarter (July-Sep)","2014 4th quarter (Oct-Dec))",
+    "2014 Male","2014 Female","2014 0-14","2014 15-24","2014 25-34","2014 35-44","2014 45-54","2014 55-64","2014 65 AND ABOVE"]
+for column in column_pairs:
+    join_yr = join_yr.withColumn(column,  F.round((F.col(column) * F.col("2014")) / 100, 1))
+    # or we can use like join_yr = join_yr.withColumn(column, F.round((F.col(column) / 100) * F.col("2014"), 1)
+# join_yr.orderBy("country_id").show()
+# print(join_yr.count())
+
+column_rename= {
+    "2014 1st quarter (Jan-March)": "Q1_14",
+    "2014 2nd quarter (Apr-June)": "Q2_14",
+    "2014 3rd quarter (July-Sep)": "Q3_14",
+    "2014 4th quarter (Oct-Dec)": "Q4_14",
+    "2014 Male": "M_14",
+    "2014 Female": "F_14",
+    "2014 0-14": "Age-0-14",
+    "2014 15-24": "Age-15-24",
+    "2014 25-34": "Age-25-34",
+    "2014 35-44": "Age-35-44",
+    "2014 45-54": "Age-45-54",
+    "2014 55-64": "Age-55-64",
+    "2014 65 AND ABOVE": "Age-65"
+}
+
+# Rename the columns based on the dictionary
+for old_col, new_col in column_rename.items():
+    join_yr = join_yr.withColumnRenamed(old_col, new_col)
+
+# Show the DataFrame again after renaming columns
+final_result=join_yr.orderBy("country_id")
+final_result.show()
+
+
+print(final_result.count())
+final_result.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://wedcount/Final_output1/")
+
+#########u got output
+
++----------+--------+--------+----------------------+--------+--------+--------+---------------------------+--------+---------+---------+---------+---------+---------+-------+------+
+|country_id|    M_14|    F_14|Country of Nationality|   Q1_14|   Q2_14|   Q3_14|2014 4th quarter (Oct-Dec))|Age-0-14|Age-15-24|Age-25-34|Age-35-44|Age-45-54|Age-55-64| Age-65|  2014|
++----------+--------+--------+----------------------+--------+--------+--------+---------------------------+--------+---------+---------+---------+---------+---------+-------+------+
+|         1| 10583.6|  8979.4|                 Sudan|  4284.3|  4792.9|  5438.5|                     5047.3|   313.0|   1076.0|   5203.8|   3775.7|   3443.1|   3423.5| 2328.0| 19563|
+|         2| 44278.6| 11208.4|              Tanzania| 14426.6| 11818.7| 11763.2|                    17478.4|  3662.1|   4549.9|   8156.6|  10709.0|  13649.8|   9932.2| 4827.4| 55487|
+|         3| 34581.4| 20049.6|  United Arab Emirates| 10216.0| 11527.1| 20814.4|                    12073.5|  4534.4|   5517.7|  10980.8|  11691.0|  10762.3|   7812.2| 3332.5| 54631|
+|         4| 27331.9| 10109.1|           Philippines|  9510.0|  8611.4|  8611.4|                    10708.1|   486.7|   2021.8|  15987.3|   9510.0|   5391.5|   3070.2|  973.5| 37441|
+|         5|133421.1|105684.9|                 China| 67667.0| 47343.0| 53559.7|                    70536.3| 31562.0|  26779.9|  52125.1|  47103.9|  41365.3|  23671.5|16498.3|239106|
+|         6| 10006.4| 15198.6|               Hungary|     0.0|     0.0|     0.0|                        0.0|   932.6|   3932.0|   7763.1|   6024.0|   3982.4|   1739.1|  831.8| 25205|
+
+
+
+
+
+
+
+
+#percentage using repetaed code
+# percentage
+df_per=join_yr.withColumn("Percentage",(col("2014 1st quarter (Jan-March)")*col("2014"))/100)
+# df_per.show()
+df_replace=df_per.withColumn("2014 1st quarter (Jan-March)",col("Percentage")).drop("Percentage")
+# df_replace.show()
+
+df_per1=df_replace.withColumn("Percentage1",(col("2014 2nd quarter (Apr-June)")*col("2014"))/100)
+# df_per1.show()
+df_replace1=df_per1.withColumn("2014 2nd quarter (Apr-June)",col("Percentage1")).drop("Percentage1")
+# df_replace1.show()
+
+df_per2=df_replace1.withColumn("Percentage2",(col("2014 3rd quarter (July-Sep)")*col("2014"))/100)
+# df_per2.show()
+df_replace2=df_per2.withColumn("2014 3rd quarter (July-Sep)",col("Percentage2")).drop("Percentage2")
+# df_replace2.show()
+
+df_per3=df_replace2.withColumn("Percentage3",(col("2014 4th quarter (Oct-Dec))")*col("2014"))/100)
+# df_per3.show()
+df_replace3=df_per3.withColumn("2014 4th quarter (Oct-Dec))",col("Percentage3")).drop("Percentage3")
+# df_replace3.show()
+df_per.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://countrycase/percentage_result/")
+
+20th may 
+columns_2014 = [col for col in df_with_id1.columns if "2014" in col]
+columns_2014.extend(["country_id","Country of Nationality"])
+df_2014 = df_with_id1.select(columns_2014)
+
+
+#correct code
+#Creating country_id and extracting only 2014 data from 2csv file
+#1st file
+from pyspark.sql.functions import monotonically_increasing_id,row_number
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+from pyspark.sql.functions import round
+
+df_join=df1.join(df2,"Country of Nationality","inner")
+df_join1=df_join.join(df3,"Country of Nationality","inner")
+#df_join1.show()
+# df_with_id1 = df_join1.withColumn("country_id", monotonically_increasing_id()+1)
+# w = Window().orderBy("Country of Nationality")
+# df_with_id1.withColumn("row_num", (1 + row_number().over(w)))
+#df_with_id1.show()
+# print(df_with_id1.count())
+columns_2014 = [col for col in df_join1.columns if "2014" in col]
+columns_2014.extend(["Country of Nationality"])
+df_2014 = df_join1.select(columns_2014)
+df_sorted1 = df_2014.orderBy("Country of Nationality")
+
+# Create a window 
+window_spec1 = Window.orderBy("Country of Nationality")
+
+# Add a row_number() column as the auto-incrementing valued
+df_with_id1 = df_sorted1.withColumn("auto_increment_id", row_number().over(window_spec1)) 
+#print(df_with_id1.count())
+#df_2014.show()
+#print(df_2014.count())
+# df_2014.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://try2014/df_2014/")
+# df4.show()
+# df_with_id2 = df4.withColumn("Country", monotonically_increasing_id()+1)
+# w1 = Window().orderBy("Country")
+# #df_with_id2.show()
+# df_with_id2.withColumn("row_num", (1 + row_number().over(w1)))
+# df_with_id2.show()
+# df_output1=df_with_id2.join(df_2014,"country_id","inner")
+# df_output1.show(63)
+df_sorted = df4.orderBy("Country")
+
+# Create a window 
+window_spec = Window.orderBy("Country")
+
+# Add a row_number() column as the auto-incrementing valued
+df_with_id = df_sorted.withColumn("auto_increment_id", row_number().over(window_spec))
+# print(df_with_id.count())
+df_output1=df_with_id.join(df_with_id1,"auto_increment_id","inner")\
+  .drop("Country of Nationality",)
+#df_output1.show()
+#print(df_output1.count())
+columns_2014_year = [col for col in df_output1.columns if "2014" in col]
+columns_2014_year.append("Country")
+col1_2014 = df_output1.select(columns_2014_year)
+# col1_2014.show()
+# print(col1_2014.count())
+# col1_2014.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://try2014/out1/")
+rename1=col1_2014.withColumnRenamed("2014","total_visted")
+#rename1.show()
+columns_per_num = [col for col in rename1.columns if "2014" in col]
+for column in columns_per_num:
+    rename1 = rename1.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn=rename1.orderBy("auto_increment_id")
+rn.show()
+print(rn.count())
+
+rn.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://try2014/per_num/")
+
+
+#try2
+#Creating country_id and extracting only 2014 data from 2csv file
+#1st file
+from pyspark.sql.functions import monotonically_increasing_id,row_number
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+from pyspark.sql.functions import round
+
+df_join=df1.join(df2,"Country of Nationality","inner")
+df_join1=df_join.join(df3,"Country of Nationality","inner")
+#df_join1.show()
+# df_with_id1 = df_join1.withColumn("country_id", monotonically_increasing_id()+1)
+# w = Window().orderBy("Country of Nationality")
+# df_with_id1.withColumn("row_num", (1 + row_number().over(w)))
+#df_with_id1.show()
+# print(df_with_id1.count())
+columns_2014 = [col for col in df_join1.columns if "2014" in col]
+columns_2014.extend(["Country of Nationality"])
+df_2014 = df_join1.select(columns_2014)
+df_sorted1 = df_2014.orderBy("Country of Nationality")
+
+# Create a window 
+window_spec1 = Window.orderBy("Country of Nationality")
+
+# Add a row_number() column as the auto-incrementing valued
+df_with_id1 = df_sorted1.withColumn("auto_increment_id", row_number().over(window_spec1)) 
+#print(df_with_id1.count())
+#df_2014.show()
+#print(df_2014.count())
+# df_2014.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://try2014/df_2014/")
+# df4.show()
+# df_with_id2 = df4.withColumn("Country", monotonically_increasing_id()+1)
+# w1 = Window().orderBy("Country")
+# #df_with_id2.show()
+# df_with_id2.withColumn("row_num", (1 + row_number().over(w1)))
+# df_with_id2.show()
+# df_output1=df_with_id2.join(df_2014,"country_id","inner")
+# df_output1.show(63)
+df_sorted = df4.orderBy("Country")
+
+# Create a window 
+window_spec = Window.orderBy("Country")
+
+# Add a row_number() column as the auto-incrementing valued
+df_with_id = df_sorted.withColumn("auto_increment_id", row_number().over(window_spec))
+# print(df_with_id.count())
+df_output1=df_with_id.join(df_with_id1,"auto_increment_id","inner")\
+  .drop("Country of Nationality",)
+#df_output1.show()
+#print(df_output1.count())
+columns_2014_year = [col for col in df_output1.columns if "2014" in col]
+columns_2014_year.append("Country")
+col1_2014 = df_output1.select(columns_2014_year)
+# col1_2014.show()
+# print(col1_2014.count())
+# col1_2014.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://try2014/out1/")
+rename1=col1_2014.withColumnRenamed("2014","total_visted")
+#rename1.show()
+columns_per_num = [col for col in rename1.columns if "2014" in col]
+for column in columns_per_num:
+    rename1 = rename1.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn=rename1.orderBy("auto_increment_id")
+# rn.show()
+# print(rn.count())
+
+# rn.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://try2014/per_num/")
+
+
+column_rename= {
+    "2014 1st quarter (Jan-March)": "1st_quarter",
+    "2014 2nd quarter (Apr-June)": "2st_quarter",
+    "2014 3rd quarter (July-Sep)": "3st_quarter",
+    "2014 4th quarter (Oct-Dec)": "4st_quarter",
+    "2014 Male": "M_14",
+    "2014 Female": "F_14",
+    "2014 0-14": "Age-0-14",
+    "2014 15-24": "Age-15-24",
+    "2014 25-34": "Age-25-34",
+    "2014 35-44": "Age-35-44",
+    "2014 45-54": "Age-45-54",
+    "2014 55-64": "Age-55-64",
+    "2014 65 AND ABOVE": "Age-65"
+}
+
+# Rename the columns based on the dictionary
+for old_col, new_col in column_rename.items():
+    rn = rn.withColumnRenamed(old_col, new_col)
+
+# Show the DataFrame again after renaming columns
+re_result=rn.orderBy("auto_increment_id")
+# re_result.show()
+# print(re_result.count())
+df_add_year = re_result.withColumn("year", F.lit(2014))
+# df_add_year.show()
+# df_add_year.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://try2014/adding_year/")
+
+#try4----final
+
+from pyspark.sql.functions import monotonically_increasing_id,row_number
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+from pyspark.sql.functions import round
+#joining df1 and df2 based on country
+df_join=df1.join(df2,"Country of Nationality","inner")
+df_join1=df_join.join(df3,"Country of Nationality","inner")
+# df_join1.show()
+# print(df_join1.count())
+
+df_with_id1 = df_join1.withColumn("country_id", monotonically_increasing_id()+1)
+w = Window().orderBy("Country of Nationality")
+df_with_id1.withColumn("row_num", (1 + row_number().over(w)))
+# df_with_id1.show()
+# print(df_with_id1.count())
+columns_2014 = [col for col in df_join1.columns if "2014" in col]
+columns_2014.extend(["Country of Nationality"])
+df_2014 = df_join1.select(columns_2014)
+df_sorted1 = df_2014.orderBy("Country of Nationality")
+# df_2014.show()
+# print(df_2014.count())
+# Create a window 
+window_spec1 = Window.orderBy("Country of Nationality")
+
+#Add a row_number() column as the auto-incrementing valued
+df_with_id1 = df_sorted1.withColumn("auto_increment_id", row_number().over(window_spec1)) 
+# print(df_with_id1.count())
+
+df_sorted = df4.orderBy("Country")
+# Create a window 
+window_spec = Window.orderBy("Country")
+
+# Add a row_number() column as the auto-incrementing valued
+df_with_id = df_sorted.withColumn("auto_increment_id", row_number().over(window_spec))
+# print(df_with_id.count())
+df_output1=df_with_id.join(df_with_id1,"auto_increment_id","inner")\
+  .drop("Country of Nationality",)
+#df_output1.show()
+#print(df_output1.count())
+columns_2014_year = [col for col in df_output1.columns if "2014" in col]
+columns_2014_year.extend(["Country","auto_increment_id"])
+col1_2014 = df_output1.select(columns_2014_year)
+# col1_2014.show()
+
+#rename 2014 because we are selcting all data start with 2014
+rename1=col1_2014.withColumnRenamed("2014","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename1.show()
+columns_per_num = [col for col in rename1.columns if "2014" in col]
+for column in columns_per_num:
+    rename1 = rename1.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn=rename1.orderBy("auto_increment_id")
+# rn.show()
+# print(rn.count())
+
+column_rename= {
+    "2014 1st quarter (Jan-March)": "1st_quarter",
+    "2014 2nd quarter (Apr-June)": "2nd_quarter",
+    "2014 3rd quarter (July-Sep)": "3rd_quarter",
+    "2014 4th quarter (Oct-Dec))": "4th_quarter",
+    "2014 Male": "M_14",
+    "2014 Female": "F_14",
+    "2014 0-14": "Age-0-14",
+    "2014 15-24": "Age-15-24",
+    "2014 25-34": "Age-25-34",
+    "2014 35-44": "Age-35-44",
+    "2014 45-54": "Age-45-54",
+    "2014 55-64": "Age-55-64",
+    "2014 65 AND ABOVE": "Age-65"
+}
+
+
+# Rename the columns based on the dictionary
+for old_col, new_col in column_rename.items():
+    rn = rn.withColumnRenamed(old_col, new_col)
+
+# Show the DataFrame again after renaming columns
+re_result=rn.orderBy("auto_increment_id")
+# re_result.show()
+# print(re_result.count())
+df_add_year = re_result.withColumn("year", F.lit(2014))
+# df_add_year.show()
+# df_add_year.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://monday1/2014_year/")
+
+
+#for 2015
+columns_2015 = [col for col in df_join1.columns if "2015" in col]
+columns_2015.extend(["Country of Nationality"])
+df_2015 = df_join1.select(columns_2015)
+df_sorted15 = df_2015.orderBy("Country of Nationality")
+# df_2015.show()
+# print(df_2015.count())
+# Create a window 
+window_spec15 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id15 = df_sorted15.withColumn("auto_increment_id", row_number().over(window_spec15)) 
+# df_with_id15.show()
+# print(df_with_id15.count())
+
+df_sorted15_1 = df4.orderBy("Country")
+# Create a window 
+window_spec15_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id15_1 = df_sorted15_1.withColumn("auto_increment_id", row_number().over(window_spec15_1))
+# df_with_id15_1.show()
+#print(df_with_id15_1.count())
+df_output15_1=df_with_id15_1.join(df_with_id15,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+# df_output15_1.show()
+# print(df_output15_1.count())
+columns_2015_year = [col for col in df_output15_1.columns if "2015" in col]
+columns_2015_year.extend(["Country","auto_increment_id"])
+col1_2015 = df_output15_1.select(columns_2015_year)
+# col1_2015.show()
+
+#rename 2014 because we are selcting all data start with 2014
+rename15=col1_2015.withColumnRenamed("2015","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename15.show()
+columns_per_num = [col for col in rename15.columns if "2015" in col]
+for column in columns_per_num:
+    rename15 = rename15.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn15=rename15.orderBy("auto_increment_id")
+# rn15.show()
+# print(rn.count())
+column_rename15= {
+    "2015 1st quarter (Jan-March) ": "1st_quarter",
+    "2015 2nd quarter (Apr-June)": "2nd_quarter",
+    "2015 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2015 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2015 Male": "M_15",
+    "2015 Female": "F_15",
+    "2015 0-14": "Age-0-14",
+    "2015 15-24": "Age-15-24",
+    "2015 25-34": "Age-25-34",
+    "2015 35-44": "Age-35-44",
+    "2015 45-54": "Age-45-54",
+    "2015 55-64": "Age-55-64",
+    "2015 65 AND ABOVE": "Age-65"
+}
+# Rename the columns based on the dictionary
+for old_col, new_col in column_rename15.items():
+    rn15 = rn15.withColumnRenamed(old_col, new_col)
+    
+# Show the DataFrame again after renaming columns
+re_result15 = rn15.orderBy("auto_increment_id")
+# re_result15.show()
+print(re_result15.count())
+df_add_year = re_result15.withColumn("year", F.lit(2015))
+df_add_year.show()
+df_add_year.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://monday1/2015_year/")
+
+
+#for 2016
+columns_2016 = [col for col in df_join1.columns if "2016" in col]
+columns_2016.extend(["Country of Nationality"])
+df_2016 = df_join1.select(columns_2016)
+df_sorted16 = df_2016.orderBy("Country of Nationality")
+# df_2016.show()
+# print(df_2015.count())
+# Create a window 
+window_spec16 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id16 = df_sorted16.withColumn("auto_increment_id", row_number().over(window_spec16)) 
+# df_with_id16.show()
+# print(df_with_id16.count())
+
+df_sorted16_1 = df4.orderBy("Country")
+# Create a window 
+window_spec16_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id16_1 = df_sorted16_1.withColumn("auto_increment_id", row_number().over(window_spec16_1))
+# df_with_id16_1.show()
+# print(df_with_id16_1.count())
+# df_output16_1=df_with_id16_1.join(df_with_id16,"auto_increment_id","inner")\
+#                           .drop("Country of Nationality")
+# df_output16_1.show()
+# print(df_output16_1.count())
+columns_2016_year = [col for col in df_output16_1.columns if "2016" in col]
+columns_2016_year.extend(["Country","auto_increment_id"])
+col1_2016 = df_output16_1.select(columns_2016_year)
+# col1_2016.show()
+
+#rename 2014 because we are selcting all data start with 2014
+rename16=col1_2016.withColumnRenamed("2016","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename16.show()
+columns_per_num = [col for col in rename16.columns if "2016" in col]
+for column in columns_per_num:
+    rename16 = rename16.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn16=rename16.orderBy("auto_increment_id")
+# rn16.show()
+# print(rn16.count())
+column_rename16= {
+    "2016 1st quarter (Jan-March) ": "1st_quarter",
+    "2016 2nd quarter (Apr-June)": "2nd_quarter",
+    "2016 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2016 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2016 Male": "M_15",
+    "2016 Female": "F_15",
+    "2016 0-14": "Age-0-14",
+    "2016 15-24": "Age-15-24",
+    "2016 25-34": "Age-25-34",
+    "2016 35-44": "Age-35-44",
+    "2016 45-54": "Age-45-54",
+    "2016 55-64": "Age-55-64",
+    "2016 65 AND ABOVE": "Age-65"
+}
+# Rename the columns based on the dictionary
+for old_col, new_col in column_rename16.items():
+    rn16 = rn16.withColumnRenamed(old_col, new_col)
+    
+# Show the DataFrame again after renaming columns
+# re_result16 = rn16.orderBy("auto_increment_id")
+# re_result16.show()
+print(re_result16.count())
+df_add_year16 = re_result16.withColumn("year", F.lit(2016))
+# df_add_year16.show()
+# df_add_year16.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://monday1/2016_year/")
+
+#for 2017
+columns_2017 = [col for col in df_join1.columns if "2017" in col]
+columns_2017.extend(["Country of Nationality"])
+df_2017 = df_join1.select(columns_2017)
+df_sorted17 = df_2017.orderBy("Country of Nationality")
+# df_2017.show()
+# print(df_2017.count())
+# Create a window 
+window_spec17 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id17 = df_sorted17.withColumn("auto_increment_id", row_number().over(window_spec17)) 
+# df_with_id17.show()
+# print(df_with_id17.count())
+
+df_sorted17_1 = df4.orderBy("Country")
+# Create a window 
+window_spec17_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id17_1 = df_sorted17_1.withColumn("auto_increment_id", row_number().over(window_spec17_1))
+# df_with_id17_1.show()
+# print(df_with_id17_1.count())
+df_output17_1=df_with_id17_1.join(df_with_id17,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+# df_output17_1.show()
+# print(df_output17_1.count())
+columns_2017_year = [col for col in df_output17_1.columns if "2017" in col]
+columns_2017_year.extend(["Country","auto_increment_id"])
+col1_2017 = df_output17_1.select(columns_2017_year)
+# col1_2017.show()
+
+# rename 2016 because we are selcting all data start with 2014
+rename17=col1_2017.withColumnRenamed("2017","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename16.show()
+columns_per_num = [col for col in rename17.columns if "2017" in col]
+for column in columns_per_num:
+    rename17 = rename17.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn17=rename17.orderBy("auto_increment_id")
+# rn17.show()
+# print(rn17.count())
+column_rename17= {
+    "2017 1st quarter (Jan-March) ": "1st_quarter",
+    "2017 2nd quarter (Apr-June)": "2nd_quarter",
+    "2017 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2017 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2017 Male": "M_15",
+    "2017 Female": "F_15",
+    "2017 0-14": "Age-0-14",
+    "2017 15-24": "Age-15-24",
+    "2017 25-34": "Age-25-34",
+    "2017 35-44": "Age-35-44",
+    "2017 45-54": "Age-45-54",
+    "2017 55-64": "Age-55-64",
+    "2017 65 AND ABOVE": "Age-65"
+}
+# Rename the columns based on the dictionary
+for old_col, new_col in column_rename17.items():
+    rn17 = rn17.withColumnRenamed(old_col, new_col)
+    
+# Show the DataFrame again after renaming columns
+re_result17 = rn17.orderBy("auto_increment_id")
+# re_result17.show()
+# print(re_result17.count())
+df_add_year17 = re_result17.withColumn("year", F.lit(2017))
+# df_add_year17.show()
+# df_add_year17.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://monday1/2017_year/")
+
+#for 2018
+from pyspark.sql.functions import monotonically_increasing_id,row_number
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+from pyspark.sql.functions import round
+
+#joining df1 and df2 based on country
+df_join=df1.join(df2,"Country of Nationality","inner")
+df_join1=df_join.join(df3,"Country of Nationality","inner")
+# df_join1.show()
+# print(df_join1.count())
+columns_2018 = [col for col in df_join1.columns if "2018" in col]
+columns_2018.extend(["Country of Nationality"])
+df_2018 = df_join1.select(columns_2018)
+df_sorted18 = df_2018.orderBy("Country of Nationality")
+#df_2018.show()
+# Create a window 
+window_spec18 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id18 = df_sorted18.withColumn("auto_increment_id", row_number().over(window_spec18)) 
+########################df_with_id18.show(63)
+# print(df_with_id18.count())
+df_sorted18_1 = df4.orderBy("Country")
+# Create a window 
+window_spec18_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id18_1 = df_sorted18_1.withColumn("auto_increment_id", row_number().over(window_spec18_1))
+##########################df_with_id18_1.show(63)
+# print(df_with_id18_1.count())
+df_output18_1=df_with_id18_1.join(df_with_id18,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+################df_output18_1.show(63)
+#print(df_output18_1.count())
+columns_2018_year = [col for col in df_output18_1.columns if "2018" in col]
+columns_2018_year.extend(["Country","auto_increment_id"])
+col1_2018 = df_output18_1.select(columns_2018_year)
+#### col1_2018.show()
+# rename 2016 because we are selcting all data start with 2014
+rename18=col1_2018.withColumnRenamed("2018","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename18.show()
+columns_per_num = [col for col in rename18.columns if "2018" in col]
+for column in columns_per_num:
+    rename18 = rename18.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn18=rename18.orderBy("auto_increment_id")
+# rn18.show(63)
+
+column_rename18= {
+    "2018 1st quarter (Jan-March) ": "1st_quarter",
+    "2018 2nd quarter (Apr-June)": "2nd_quarter",
+    "2018 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2018 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2018 Male": "M_18",
+    "2018 Female": "F_18",
+    "2018 0-14": "Age-0-14",
+    " 2018 15-24": "Age-15-24",
+    " 2018 25-34": "Age-25-34",
+    "2018 35-44": "Age-35-44",
+    "2018 45-54": "Age-45-54",
+    "2018 55-64": "Age-55-64",
+    "2018 65 AND ABOVE": "Age-65"
+}
+#Rename the columns based on the dictionary
+for old_col, new_col in column_rename18.items():
+    rn18 = rn18.withColumnRenamed(old_col, new_col)
+# Show the DataFrame again after renaming columns
+re_result18 = rn18.orderBy("auto_increment_id")
+# re_result18.show()
+# print(re_result18.count())
+df_add_year18 = re_result18.withColumn("year", F.lit(2018))
+df_add_year18.show()
+df_add_year18.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://genwed/2018_year/")
+
+
+#2019 file
+columns_2019 = [col for col in df_join1.columns if "2019" in col]
+columns_2019.extend(["Country of Nationality"])
+df_2019 = df_join1.select(columns_2019)
+df_sorted19 = df_2019.orderBy("Country of Nationality")
+# df_2019.show()
+# Create a window 
+window_spec19 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id19 = df_sorted19.withColumn("auto_increment_id", row_number().over(window_spec19)) 
+# df_with_id19.show()
+df_sorted19_1 = df4.orderBy("Country")
+# Create a window 
+window_spec19_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id19_1 = df_sorted19_1.withColumn("auto_increment_id", row_number().over(window_spec19_1))
+# df_with_id19_1.show()
+df_output19_1=df_with_id19_1.join(df_with_id19,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+# df_output19_1.show()
+columns_2019_year = [col for col in df_output19_1.columns if "2019" in col]
+columns_2019_year.extend(["Country","auto_increment_id"])
+col1_2019 = df_output19_1.select(columns_2019_year)
+# col1_2019.show()
+# rename 2016 because we are selcting all data start with 2014
+rename19=col1_2019.withColumnRenamed("2019","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename19.show()
+columns_per_num = [col for col in rename19.columns if "2019" in col]
+for column in columns_per_num:
+    rename19 = rename19.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn19=rename19.orderBy("auto_increment_id")
+# rn19.show()
+column_rename19= {
+    "2019 1st quarter (Jan-March) ": "1st_quarter",
+    "2019 2nd quarter (Apr-June)": "2nd_quarter",
+    "2019 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2019 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2019 Male": "M_19",
+    "2019 Female": "F_19",
+    "2019 0-14": "Age-0-14",
+    " 2019 15-24": "Age-15-24",
+    " 2019 25-34": "Age-25-34",
+    "2019 35-44": "Age-35-44",
+    "2019 45-54": "Age-45-54",
+    "2019 55-64": "Age-55-64",
+    "2019 65 AND ABOVE": "Age-65"
+}
+#Rename the columns based on the dictionary
+for old_col, new_col in column_rename19.items():
+    rn19 = rn19.withColumnRenamed(old_col, new_col)
+# Show the DataFrame again after renaming columns
+re_result19 = rn19.orderBy("auto_increment_id")
+# re_result19.show()
+# print(re_result19.count())
+df_add_year19 = re_result19.withColumn("year", F.lit(2019))
+# df_add_year19.show()
+df_add_year19.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://genwed/2019_year/")
+
+#2020 file
+columns_2020 = [col for col in df_join1.columns if "2020" in col]
+columns_2020.extend(["Country of Nationality"])
+df_2020 = df_join1.select(columns_2020)
+df_sorted20 = df_2020.orderBy("Country of Nationality")
+# df_2020.show()
+# Create a window 
+window_spec20 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id20 = df_sorted20.withColumn("auto_increment_id", row_number().over(window_spec20)) 
+# df_with_id20.show()
+df_sorted20_1 = df4.orderBy("Country")
+# Create a window 
+window_spec20_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id20_1 = df_sorted20_1.withColumn("auto_increment_id", row_number().over(window_spec20_1))
+# df_with_id20_1.show()
+df_output20_1=df_with_id20_1.join(df_with_id20,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+# df_output20_1.show()
+columns_2020_year = [col for col in df_output20_1.columns if "2020" in col]
+columns_2020_year.extend(["Country","auto_increment_id"])
+col1_2020 = df_output20_1.select(columns_2020_year)
+# col1_2020.show()
+rename20=col1_2020.withColumnRenamed("2020","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename20.show()
+columns_per_num = [col for col in rename20.columns if "2020" in col]
+for column in columns_per_num:
+    rename20 = rename20.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn20=rename20.orderBy("auto_increment_id")
+# rn20.show()
+column_rename20= {
+    "2020 1st quarter (Jan-March) ": "1st_quarter",
+    "2020 2nd quarter (Apr-June)": "2nd_quarter",
+    "2020 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2020 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2020 Male": "M_20",
+    "2020 Female": "F_20",
+    "2020 0-14": "Age-0-14",
+    " 2020 15-24": "Age-15-24",
+    " 2020 25-34": "Age-25-34",
+    "2020 35-44": "Age-35-44",
+    "2020 45-54": "Age-45-54",
+    "2020 55-64": "Age-55-64",
+    "2020 65 AND ABOVE": "Age-65"
+}
+#Rename the columns based on the dictionary
+for old_col, new_col in column_rename20.items():
+    rn20 = rn20.withColumnRenamed(old_col, new_col)
+# Show the DataFrame again after renaming columns
+re_result20 = rn20.orderBy("auto_increment_id")
+# re_result20.show()
+# print(re_result20.count())
+df_add_year20 = re_result20.withColumn("year", F.lit(2020))
+df_add_year20.show()
+df_add_year20.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://genwed/2020_year/")
+
+
+#22nd may -----task join country airport and country wat visitor
+
+from pyspark.sql.functions import monotonically_increasing_id
+
+#file1 reading
+df1 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Airport.csv")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Visitors Ways.csv")
+# df2.show()
+df_join=df1.join(df2,"Country of Nationality","inner").orderBy("Country of Nationality")
+# df_join.show(63)
+columns_2014 = [col for col in df_join.columns if "2014" in col]
+columns_2014.extend(["Country of Nationality"])
+df_2014 = df_join.select(columns_2014)
+# df_2014.show(63)
+df_id=df_2014.withColumn("country_id",monotonically_increasing_id()+1).orderBy("country_id")
+df_id.show(63)
+# df_id.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://lakwed/2014_airport/")
+
+#-----------if we want retrive all the years from 2014 to 2020 
+df1 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Airport.csv")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Visitors Ways.csv")
+# df2.show()
+years = range(2014, 2021)
+# Iterate over each year
+for year in years:
+    # Select columns for the current year from each DataFrame
+    columns_df1 = [col for col in df1.columns if str(year) in col]
+    columns_df2 = [col for col in df2.columns if str(year) in col]
+
+    # Apply SelectFields transformation to select the necessary columns
+    df1_year = df1.select(['Country of Nationality'] + columns_df1)
+    df2_year = df2.select(['Country of Nationality'] + columns_df2)
+
+    
+    
+
+    # Merge the Spark DataFrames based on 'Country of Nationality' column
+    merged_df = df1_year.join(df2_year, ['Country of Nationality'], 'outer')
+    merged_df.write.option("header", "true").csv(f"s3://lakwed/{year}_merged.csv", mode='overwrite')
+
+years = range(2014, 2021)
+
+# Iterate over each year
+for year in years:
+    # Select columns for the current year from each DataFrame
+    columns_df1 = [col for col in df1.columns if str(year) in col]
+    columns_df2 = [col for col in df2.columns if str(year) in col]
+    column_df3 =  [col for col in df3.columns if str(year) in col]
+    # Apply Select transformation to select the necessary columns
+    df1_year = df1.select(['Country of Nationality'] + columns_df1)
+    df2_year = df2.select(['Country of Nationality'] + columns_df2)
+    df3_year = df3.select(['Country'] + column_df3)
+    # join
+    merged_df = df1_year.join(df2_year, ['Country of Nationality'], 'outer') \
+                        .orderBy('Country of Nationality')
+    merged_df_id=merged_df.withColumn("country_id",monotonically_increasing_id()+1).orderBy("country_id")
+    df3_year_id=df3_year.withColumn("country_id",monotonically_increasing_id()+1).orderBy("country_id")\
+                   
+    df_3_year=df3_year_id.join(merged_df_id,"country_id","inner")
+    # df_crete_id.write.option("header", "true").csv(f"s3://lakwed/{year}_allyear.csv", mode='overwrite')
+    rename=df_3_year.withColumnRenamed("{years}","total_visted")
+
+    columns_per_num = [col for col in rename.columns if "years" in col]
+    for column in columns_per_num:
+        rename = rename.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+
+

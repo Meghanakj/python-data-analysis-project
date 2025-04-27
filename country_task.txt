@@ -1,0 +1,730 @@
+role1: S3full access,AWSglueconsolefullaccess, cloud watch full access
+#task 1: replace null/blanck with 0
+from pyspark.sql.functions import col,when
+#file1 reading
+df1 = spark.read.format("csv").option("header","true").load("s3://genwed/Country Quater Wise Visitors.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# df1.show()
+# print(df1.count())
+# df1.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://genwed/file1/")
+
+#2file
+df2 = spark.read.format("csv").option("header","true").load("s3://genwed/Country Wise Age Group.csv")
+for col_name in df2.columns:
+    df2 = df2.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+       .dropDuplicates()\
+       .orderBy("Country of Nationality")
+# df2.show()
+# print(df2.count())
+# df2.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://genwed/file2/")
+
+#file4 -gender
+df3 = spark.read.format("csv").option("header","true").load("s3://genwed/Country Wise Gender.csv")
+for col_name in df3.columns:
+    df3 = df3.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+       .dropDuplicates()\
+        .orderBy("Country of Nationality")
+# df3.show()
+# print(df3.count())
+# df3.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://genwed/file3/")
+
+#--reading country wise yearly visitor
+df4 = spark.read.format("csv").option("header","true").load("s3://genwed/Country Wise Yearly VIsitors.csv")
+for col_name in df4.columns:
+    df4 = df4.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+       .dropDuplicates()\
+       .orderBy("Country")
+# df4.show()
+# print(df4.count())
+# df4.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://genwed/file4/")
+
+from pyspark.sql.functions import monotonically_increasing_id,row_number
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+from pyspark.sql.functions import round
+
+#joining df1 and df2 based on country
+df_join=df1.join(df2,"Country of Nationality","inner")
+df_join1=df_join.join(df3,"Country of Nationality","inner")
+# df_join1.show()
+# print(df_join1.count())
+columns_2018 = [col for col in df_join1.columns if "2018" in col]
+columns_2018.extend(["Country of Nationality"])
+df_2018 = df_join1.select(columns_2018)
+df_sorted18 = df_2018.orderBy("Country of Nationality")
+#df_2018.show()
+# Create a window 
+window_spec18 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id18 = df_sorted18.withColumn("auto_increment_id", row_number().over(window_spec18)) 
+########################df_with_id18.show(63)
+# print(df_with_id18.count())
+df_sorted18_1 = df4.orderBy("Country")
+# Create a window 
+window_spec18_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id18_1 = df_sorted18_1.withColumn("auto_increment_id", row_number().over(window_spec18_1))
+##########################df_with_id18_1.show(63)
+# print(df_with_id18_1.count())
+df_output18_1=df_with_id18_1.join(df_with_id18,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+################df_output18_1.show(63)
+#print(df_output18_1.count())
+columns_2018_year = [col for col in df_output18_1.columns if "2018" in col]
+columns_2018_year.extend(["Country","auto_increment_id"])
+col1_2018 = df_output18_1.select(columns_2018_year)
+#### col1_2018.show()
+# rename 2016 because we are selcting all data start with 2014
+rename18=col1_2018.withColumnRenamed("2018","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename18.show()
+columns_per_num = [col for col in rename18.columns if "2018" in col]
+for column in columns_per_num:
+    rename18 = rename18.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn18=rename18.orderBy("auto_increment_id")
+# rn18.show(63)
+
+column_rename18= {
+    "2018 1st quarter (Jan-March) ": "1st_quarter",
+    "2018 2nd quarter (Apr-June)": "2nd_quarter",
+    "2018 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2018 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2018 Male": "M_18",
+    "2018 Female": "F_18",
+    "2018 0-14": "Age-0-14",
+    " 2018 15-24": "Age-15-24",
+    " 2018 25-34": "Age-25-34",
+    "2018 35-44": "Age-35-44",
+    "2018 45-54": "Age-45-54",
+    "2018 55-64": "Age-55-64",
+    "2018 65 AND ABOVE": "Age-65"
+}
+#Rename the columns based on the dictionary
+for old_col, new_col in column_rename18.items():
+    rn18 = rn18.withColumnRenamed(old_col, new_col)
+# Show the DataFrame again after renaming columns
+re_result18 = rn18.orderBy("auto_increment_id")
+# re_result18.show()
+# print(re_result18.count())
+df_add_year18 = re_result18.withColumn("year", F.lit(2018))
+df_add_year18.show()
+df_add_year18.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://genwed/2018_year/")
+
+#2019 file
+columns_2019 = [col for col in df_join1.columns if "2019" in col]
+columns_2019.extend(["Country of Nationality"])
+df_2019 = df_join1.select(columns_2019)
+df_sorted19 = df_2019.orderBy("Country of Nationality")
+# df_2019.show()
+# Create a window 
+window_spec19 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id19 = df_sorted19.withColumn("auto_increment_id", row_number().over(window_spec19)) 
+# df_with_id19.show()
+df_sorted19_1 = df4.orderBy("Country")
+# Create a window 
+window_spec19_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id19_1 = df_sorted19_1.withColumn("auto_increment_id", row_number().over(window_spec19_1))
+# df_with_id19_1.show()
+df_output19_1=df_with_id19_1.join(df_with_id19,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+# df_output19_1.show()
+columns_2019_year = [col for col in df_output19_1.columns if "2019" in col]
+columns_2019_year.extend(["Country","auto_increment_id"])
+col1_2019 = df_output19_1.select(columns_2019_year)
+# col1_2019.show()
+# rename 2016 because we are selcting all data start with 2014
+rename19=col1_2019.withColumnRenamed("2019","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename19.show()
+columns_per_num = [col for col in rename19.columns if "2019" in col]
+for column in columns_per_num:
+    rename19 = rename19.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn19=rename19.orderBy("auto_increment_id")
+# rn19.show()
+column_rename19= {
+    "2019 1st quarter (Jan-March) ": "1st_quarter",
+    "2019 2nd quarter (Apr-June)": "2nd_quarter",
+    "2019 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2019 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2019 Male": "M_19",
+    "2019 Female": "F_19",
+    "2019 0-14": "Age-0-14",
+    " 2019 15-24": "Age-15-24",
+    " 2019 25-34": "Age-25-34",
+    "2019 35-44": "Age-35-44",
+    "2019 45-54": "Age-45-54",
+    "2019 55-64": "Age-55-64",
+    "2019 65 AND ABOVE": "Age-65"
+}
+#Rename the columns based on the dictionary
+for old_col, new_col in column_rename19.items():
+    rn19 = rn19.withColumnRenamed(old_col, new_col)
+# Show the DataFrame again after renaming columns
+re_result19 = rn19.orderBy("auto_increment_id")
+# re_result19.show()
+# print(re_result19.count())
+df_add_year19 = re_result19.withColumn("year", F.lit(2019))
+# df_add_year19.show()
+df_add_year19.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://genwed/2019_year/")
+
+
+#2020 file
+columns_2020 = [col for col in df_join1.columns if "2020" in col]
+columns_2020.extend(["Country of Nationality"])
+df_2020 = df_join1.select(columns_2020)
+df_sorted20 = df_2020.orderBy("Country of Nationality")
+# df_2020.show()
+# Create a window 
+window_spec20 = Window.orderBy("Country of Nationality")
+#Add a row_number() column as the auto-incrementing valued
+df_with_id20 = df_sorted20.withColumn("auto_increment_id", row_number().over(window_spec20)) 
+# df_with_id20.show()
+df_sorted20_1 = df4.orderBy("Country")
+# Create a window 
+window_spec20_1 = Window.orderBy("Country")
+# Add a row_number() column as the auto-incrementing valued
+df_with_id20_1 = df_sorted20_1.withColumn("auto_increment_id", row_number().over(window_spec20_1))
+# df_with_id20_1.show()
+df_output20_1=df_with_id20_1.join(df_with_id20,"auto_increment_id","inner")\
+                          .drop("Country of Nationality")
+# df_output20_1.show()
+columns_2020_year = [col for col in df_output20_1.columns if "2020" in col]
+columns_2020_year.extend(["Country","auto_increment_id"])
+col1_2020 = df_output20_1.select(columns_2020_year)
+# col1_2020.show()
+rename20=col1_2020.withColumnRenamed("2020","total_visted")\
+                 .withColumnRenamed("auto_increment_id","country_id")
+# rename20.show()
+columns_per_num = [col for col in rename20.columns if "2020" in col]
+for column in columns_per_num:
+    rename20 = rename20.withColumn(column,  F.round((F.col(column) * F.col("total_visted")) / 100, 1))
+rn20=rename20.orderBy("auto_increment_id")
+# rn20.show()
+column_rename20= {
+    "2020 1st quarter (Jan-March) ": "1st_quarter",
+    "2020 2nd quarter (Apr-June)": "2nd_quarter",
+    "2020 3rd quarter (July-Sep) ": "3rd_quarter",
+    "2020 4th quarter (Oct-Dec) ": "4th_quarter",
+    "2020 Male": "M_20",
+    "2020 Female": "F_20",
+    "2020 0-14": "Age-0-14",
+    " 2020 15-24": "Age-15-24",
+    " 2020 25-34": "Age-25-34",
+    "2020 35-44": "Age-35-44",
+    "2020 45-54": "Age-45-54",
+    "2020 55-64": "Age-55-64",
+    "2020 65 AND ABOVE": "Age-65"
+}
+#Rename the columns based on the dictionary
+for old_col, new_col in column_rename20.items():
+    rn20 = rn20.withColumnRenamed(old_col, new_col)
+# Show the DataFrame again after renaming columns
+re_result20 = rn20.orderBy("auto_increment_id")
+# re_result20.show()
+# print(re_result20.count())
+df_add_year20 = re_result20.withColumn("year", F.lit(2020))
+df_add_year20.show()
+df_add_year20.write \
+.format("csv") \
+.option("header", "true") \
+.mode("overwrite") \
+.save("s3://genwed/2020_year/")
+
+#22nd may -----task join country airport and country wat visitor
+
+from pyspark.sql.functions import monotonically_increasing_id
+
+#file1 reading ony for one year 2014
+df1 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Airport.csv")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Visitors Ways.csv")
+# df2.show()
+df_join=df1.join(df2,"Country of Nationality","inner").orderBy("Country of Nationality")
+# df_join.show(63)
+c# df3.show()
+df_join=df1.join(df2,"Country of Nationality","inner").orderBy("Country of Nationality")
+# df_join.show(63)
+df_id=df_join.withColumn("country_id",monotonically_increasing_id()+1).orderBy("country_id")
+# df_id.show()
+columns_2014 = [col for col in df_id.columns if "2014" in col]
+coun_id_col = ["Country of Nationality", "country_id"] + columns_2014
+df_2014 = df_id.select(*coun_id_col)
+# df_id.write \
+# .format("csv") \
+# .option("header", "true") \
+# .mode("overwrite") \
+# .save("s3://lakwed/2014_airport/")
+
+#-----------if we want retrive all the years from 2014 to 2020 
+df1 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Airport.csv")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://lakwed/Country Wise Visitors Ways.csv")
+# df2.show()
+years = range(2014, 2021)
+# Iterate over each year
+for year in years:
+    # Select columns for the current year from each DataFrame
+    columns_df1 = [col for col in df1.columns if str(year) in col]
+    columns_df2 = [col for col in df2.columns if str(year) in col]
+
+    # Apply SelectFields transformation to select the necessary columns
+    df1_year = df1.select(['Country of Nationality'] + columns_df1)
+    df2_year = df2.select(['Country of Nationality'] + columns_df2)
+
+    
+    
+
+    # Merge the Spark DataFrames based on 'Country of Nationality' column
+    merged_df = df1_year.join(df2_year, ['Country of Nationality'], 'outer')
+    merged_df.write.option("header", "true").csv(f"s3://lakwed/{year}_merged.csv", mode='overwrite')
+
+_-------------------------
+from pyspark.sql.functions import monotonically_increasing_id,when,col
+
+#file1 reading ony for one year 2014
+df1 = spark.read.format("csv").option("header","true").load("s3://lsmkj/Country Wise Airport.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://lsmkj/Country Wise Visitors Ways.csv")
+# df2.show()
+df3 = spark.read.format("csv").option("header","true").load("s3://lsmkj/Country Wise Yearly VIsitors.csv") \
+               ..withColumn("country_id", monotonically_increasing_id() + 1)
+df3.show()
+df_join = df1.join(df2, "Country of Nationality", "outer").orderBy("Country of Nationality")
+df_join = df_join.withColumn("country_id", monotonically_increasing_id() + 1)
+# df_join.show()
+
+#------------wed night 
+from pyspark.sql.functions import col,when,monotonically_increasing_id
+from pyspark.sql import functions as F
+#file1 reading
+df1 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Airport.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# df2.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Visitors Ways.csv").orderBy("Country of Nationality") 
+# df2.show()
+df3 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Yearly VIsitors.csv").orderBy("Country")
+# df3.show()
+df3_id=df3.withColumn("country_id",monotonically_increasing_id()+1)
+# df3_id.show()
+df1_join_df2=df1.join(df2,"Country of Nationality","inner").orderBy("Country of Nationality")
+# df1_join_df2.show() 
+df_12_id=df1_join_df2.withColumn("country_id",monotonically_increasing_id()+1)
+# df_12_id.show(63)
+join1_2_3_id = df3_id.join(df_12_id, "country_id", "inner")
+columns_rename_df3 = [f"total_{year}" for year in range(2014, 2021)]
+for old_col, new_col in zip(df3_id.columns[1:], columns_rename_df3):
+    join1_2_3_id = join1_2_3_id.withColumnRenamed(old_col, new_col)
+join_drop = join1_2_3_id.drop("Country")
+years = range(2014, 2021)
+for year in years:
+    columns_df1 = [col for col in join_drop.columns if str(year) in col]
+    df_year = join_drop.select(['Country of Nationality', 'country_id'] + columns_df1)
+    total_col = f"total_{year}"
+    for column in df_year.columns:
+        if "percentage" in column.lower():
+            df_year = df_year.withColumn(column, F.round((F.col(column) * F.col(total_col)) / 100, 1))
+
+    df_year.write.option("header", "true").csv(f"s3://suswed/{year}_merged.csv", mode='overwrite')
+
+#THURSDAY WORK USING RANGE AND LOOP
+from pyspark.sql.functions import col,when,monotonically_increasing_id,round as F_round
+from pyspark.sql import functions as F
+#file1 reading
+df1 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Airport.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Visitors Ways.csv").orderBy("Country of Nationality") 
+# df2.show()
+df3 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Yearly VIsitors.csv").orderBy("Country")
+# df3.show()
+df3_id=df3.withColumn("country_id",monotonically_increasing_id()+1)
+# df3_id.show()
+df1_join_df2=df1.join(df2,"Country of Nationality","inner").orderBy("Country of Nationality")
+# df1_join_df2.show() 
+df_12_id=df1_join_df2.withColumn("country_id",monotonically_increasing_id()+1)
+# df_12_id.show(63)
+join1_2_3_id = df3_id.join(df_12_id, "country_id", "inner")
+# join1_2_3_id.show()
+columns_rename_df3 = [f"total_{year}" for year in range(2014, 2021)]
+for old_col, new_col in zip(df3_id.columns[1:], columns_rename_df3):
+    join1_2_3_id = join1_2_3_id.withColumnRenamed(old_col, new_col)
+join_drop = join1_2_3_id.drop("Country")
+# join_drop.show()
+years = range(2014, 2015)
+for year in years:
+    
+    columns_df1 = [col_name for col_name in join_drop.columns if str(year) in col_name]
+    #print(columns_df1)
+    total_col = f"total_{year}"
+    
+    
+    df_year = join_drop.select(['Country of Nationality', 'country_id']+ columns_df1).dropDuplicates()
+    # df_year.show()
+    
+    for column in df_year.columns:
+        # print(column)
+       
+        df_year = df_year.withColumn(column, F_round((F.col(column) /100) * F.col(total_col), 1))
+        df_year.show()
+    
+    # Writing the results to S3
+    #df_year.write.option("header", "true").csv(f"s3://suswed/{year}_merged.csv", mode='overwrite')
+
+
+
+
+
+from pyspark.sql.functions import col,when,monotonically_increasing_id,round as F_round
+from pyspark.sql import functions as F
+#file1 reading
+df1 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Airport.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Visitors Ways.csv").orderBy("Country of Nationality") 
+# df2.show()
+df3 = spark.read.format("csv").option("header","true").load("s3://suswed/Country Wise Yearly VIsitors.csv").orderBy("Country")
+# df3.show()
+df3_id=df3.withColumn("country_id",monotonically_increasing_id()+1)
+# df3_id.show()
+df1_join_df2=df1.join(df2,"Country of Nationality","inner").orderBy("Country of Nationality")
+# df1_join_df2.show() 
+df_12_id=df1_join_df2.withColumn("country_id",monotonically_increasing_id()+1)
+# df_12_id.show(63)
+join1_2_3_id = df3_id.join(df_12_id, "country_id", "inner")
+# join1_2_3_id.show()
+columns_rename_df3 = [f"total_{year}" for year in range(2014, 2021)]
+for old_col, new_col in zip(df3_id.columns[1:], columns_rename_df3):
+    join1_2_3_id = join1_2_3_id.withColumnRenamed(old_col, new_col)
+join_drop = join1_2_3_id.drop("Country")
+# join_drop.show()
+years = range(2014, 2018)
+for year in years:
+    
+    columns_df1 = [col_name for col_name in join_drop.columns if str(year) in col_name]
+    #print(columns_df1)
+    total_col = f"total_{year}"
+    
+    # Ensure the total column is only selected once
+    if total_col in columns_df1:
+        columns_df1.remove(total_col)
+    
+    # Print columns after removal
+    print(f"Year {year} columns after removal: {columns_df1}")
+    
+    
+    df_year = join_drop.select(['Country of Nationality', 'country_id']+ columns_df1).dropDuplicates()
+    # df_year.show()
+    
+    for column in df_year.columns:
+        # print(column)
+        if "years" in column.lower():
+            df_year = df_year.withColumn(column, F_round((F.col(column) /100) * F.col(f"total_{year}"), 1))
+    # df_year.show()
+    
+    # Writing the results to S3
+    #df_year.write.option("header", "true").csv(f"s3://suswed/{year}_merged.csv", mode='overwrite')
+
+----------------------------------------------------------------------------------------------------------
+-----24th may friday work final got 
+-----task 2:  extracting year wise for airport and percentage to number
+
+from pyspark.sql.functions import col,when,monotonically_increasing_id,round as F_round
+from pyspark.sql import functions as F
+#file1 reading
+df1 = spark.read.format("csv").option("header","true").load("s3://fribucket/Country Wise Airport.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# df1.show()
+df2 = spark.read.format("csv").option("header","true").load("s3://fribucket/Country Wise Visitors Ways.csv").orderBy("Country of Nationality") 
+# df2.show()
+df3 = spark.read.format("csv").option("header","true").load("s3://fribucket/Country Wise Yearly VIsitors.csv").orderBy("Country")
+# df3.show()
+df3_id=df3.withColumn("country_id",monotonically_increasing_id()+1)
+# df3_id.show()
+df1_join_df2=df1.join(df2,"Country of Nationality","inner").orderBy("Country of Nationality")
+# df1_join_df2.show() 
+df_12_id=df1_join_df2.withColumn("country_id",monotonically_increasing_id()+1)
+# df_12_id.show()
+join1_2_3_id = df3_id.join(df_12_id, "country_id", "inner")
+# join1_2_3_id.show()
+columns_rename_df3 = [f"total_{year}" for year in range(2014, 2021)]
+for old_col, new_col in zip(df3_id.columns[1:], columns_rename_df3):
+    join1_2_3_id = join1_2_3_id.withColumnRenamed(old_col, new_col)
+join_drop = join1_2_3_id.drop("Country")
+# join_drop.show()
+years = range(2014, 2021)
+# print(list(years))
+for year in years:
+    
+    columns_df1 = [col_name for col_name in join_drop.columns if str(year) in col_name]
+    # print(columns_df1)
+    total_col = f"total_{year}"
+    # print(total_col)
+    df_year = join_drop.select(['Country of Nationality', 'country_id']+ columns_df1).dropDuplicates()
+    # # df_year.show()
+    for column in df_year.columns:
+        #print(column)
+        if str(year) in column and column not in ['Country of Nationality', 'country_id', total_col]:
+            df_year = df_year.withColumn(column, F_round((F.col(column) / 100) * F.col(total_col), 1))
+    # df_year.show()
+    # Writing the results to S3
+    df_year.write.option("header", "true").csv(f"s3://fribucket/{year}_airport.csv", mode='overwrite')
+---------------------------------------------------------------------------------------------------------------
+-----Task 3: joining monthffa, country ffa and state ffa then join all 3 based year also extract from 2014- 2020 in csv file 
+
+df_month = spark.read.format("csv").option("header","true").load("s3://monthbuc/Month Wise FFA.csv").orderBy("year") 
+# df_month.show()
+df_Country = spark.read.format("csv").option("header","true").load("s3://monthbuc/Top 10 Country FFA.csv").orderBy("year")
+#df_Country.show()
+df_State = spark.read.format("csv").option("header","true").load("s3://monthbuc/Top10 State FFA Visit.csv").orderBy("year")
+#df_State.show()
+df_month = df_month.withColumn("Year", col("Year").cast("int"))
+df_Country = df_Country.withColumn("Year", col("Year").cast("int"))
+df_State=df_State.withColumn("Year",col("Year").cast("int"))
+df_join_ffa=df_month.join(df_Country,"Year","inner").join(df_State,"Year","inner")
+#df_join_ffa.show()
+years = range(2014, 2021)
+for year in years:
+    filter_df_join = df_join_ffa.filter(df_join_ffa['year'] == year)
+    # filter_df_join.show()
+    #filter_df_join.write.option("header", "true").csv(f"s3://monthbuc/{year}_ffa.csv", mode='overwrite')
+
+---------------------------------------------------------------------------------------------------------------------------
+#joining properly 27th may, sat
+#joining country, rename,calculation and extarcting year for country 
+
+from pyspark.sql.functions import col,when,monotonically_increasing_id,coalesce,round as F_round
+from pyspark.sql import functions as F
+df1 = spark.read.format("csv").option("header","true").load("s3://monair/data_csv (1)/data_csv/Country Quater Wise Visitors.csv")
+for col_name in df1.columns:
+    df1 = df1.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                         .orderBy("Country of Nationality")
+# print(df1.count())
+# df1.show(63)
+df2 = spark.read.format("csv").option("header","true").load("s3://monair/data_csv (1)/data_csv/Country Wise Age Group.csv")
+for col_name in df2.columns:
+    df2 = df2.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# print(df2.count())
+# df2.show()
+df1_2=df1.join(df2,"Country of Nationality","inner") \
+           .orderBy("Country of Nationality")
+df_id=df1_2.withColumn("country_id",monotonically_increasing_id()+1)
+# print(df_id.count())
+# df_id.show(63)
+df3 = spark.read.format("csv").option("header","true").load("s3://monair/data_csv (1)/data_csv/Country Wise Gender.csv")
+for col_name in df3.columns:
+    df3 = df3.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+# print(df3.count())
+#df3.show()
+df12_3=df3.join(df_id,"Country of Nationality","inner").orderBy("Country of Nationality")
+# print(df12_3.count())
+# df12_3.show(63)
+df4 = spark.read.format("csv").option("header","true").load("s3://monair/data_csv (1)/data_csv/Country Wise Yearly VIsitors.csv") \
+                            .orderBy("Country")
+#print(df4.count())
+# df4.show()
+mapping_data = [
+    ("U.S.A", "United States Of America"),
+    ("U.K.", "United Kingdom"),
+    ("U.A.E.", "United Arab Emirates")
+]
+mapping_columns = ["NonStandardName", "StandardName"]
+mapping_df = spark.createDataFrame(mapping_data, mapping_columns)
+#mapping_df.show()
+# Standardize country names in df4
+df4_sta = df4.join(mapping_df, df4["Country"] == mapping_df["NonStandardName"], "left_outer") \
+    .withColumn("StandardizedCountry", coalesce(col("StandardName"), col("Country"))) \
+    .drop("NonStandardName", "StandardName", "Country") \
+    .withColumnRenamed("StandardizedCountry", "Country") \
+     .orderBy("Country") \
+      .withColumnRenamed("Country","Country of Nationality")
+# print(df4_sta.count())
+# df4_sta.show(63)
+columns_rename_df3 = [f"total_{year}" for year in range(2014, 2021)]
+for old_col, new_col in zip(df4_sta.columns[:7], columns_rename_df3):
+    df4_sta = df4_sta.withColumnRenamed(old_col, new_col)
+# print(df4_sta.count())
+# df4_sta.show(63)
+df4_id=df4_sta.withColumn("country_id",monotonically_increasing_id()+1).orderBy("country_id") \
+          .drop("Country of Nationality")
+       
+# print(df4_id.count())
+# df4_id.show(63)
+df_1234=df12_3.join(df4_id,"country_id","inner")
+# print(df_1234.count())
+# df_1234.show(63)
+years = range(2014, 2021)
+# print(list(years))
+rename_mapping = {
+    "Male": "male",
+    "Female": "female",
+    "1st quarter (Jan-March) ": "q1",
+    "2nd quarter (Apr-June)": "q2",
+    "3rd quarter (July-Sep) ": "q3",
+    "4th quarter (Oct-Dec) ": "q4",
+    "0-14": "0-14",
+    " 15-24": "15-24",
+    "25-34": "25-34",
+    "35-44": "35-44",
+    "45-54": "45-54",
+    "55-64": "55-64",
+    "65 AND ABOVE": "65_and_above"
+}
+for year in years:
+    
+    columns_df1 = [col_name for col_name in df_1234.columns if str(year) in col_name]
+    #print(columns_df1)
+    total_col = f"total_{year}"
+    #print(total_col)
+    df_year = df_1234.select(['Country of Nationality', 'country_id']+ columns_df1).dropDuplicates() \
+                .orderBy('Country of Nationality', 'country_id')
+    # print(df_year.count())
+    # df_year.show(63)
+    for column in df_year.columns:
+        # print(column)
+        if str(year) in column and column not in ['Country of Nationality', 'country_id', total_col]:
+            df_year = df_year.withColumn(column, F_round((F.col(column) / 100) * F.col(total_col), 1)) 
+    for old_name_fragment, new_name in rename_mapping.items():
+        for column in df_year.columns:
+            if old_name_fragment.strip() in column and str(year) in column:
+                new_col_name = column.replace(old_name_fragment.strip(), new_name).strip()
+                df_year = df_year.withColumnRenamed(column, new_col_name)
+
+    df_year = df_year.toDF(*[c.strip() for c in df_year.columns])
+    df_year = df_year.orderBy('Country of Nationality') 
+    
+    df_year = df_year.withColumn("year", F.lit(year))
+    #df_year.show(63)
+    df_year.write.option("header", "true").csv(f"s3://filecountry/{year}_country.csv", mode='overwrite')
+
+
+
+--------------------------for airport file
+
+from pyspark.sql.functions import col,when,lit,coalesce,monotonically_increasing_id,round as F_round
+from pyspark.sql import functions as F
+#file1 reading
+df5 = spark.read.format("csv").option("header","true").load("s3://monair/data_csv (1)/data_csv/Country Wise Airport.csv")
+for col_name in df5.columns:
+    df5 = df5.withColumn(col_name, when(col(col_name).isNull() | (col(col_name) == ""), 0).otherwise(col(col_name))) \
+                           .dropDuplicates()\
+                           .orderBy("Country of Nationality")
+
+#print(df5.count())
+# df5.show(63)
+df6 = spark.read.format("csv").option("header","true").load("s3://monair/data_csv (1)/data_csv/Country Wise Visitors Ways.csv").orderBy("Country of Nationality") 
+# print(df6.count())
+# df6.show(63)
+df4 = spark.read.format("csv").option("header","true").load("s3://monair/data_csv (1)/data_csv/Country Wise Yearly VIsitors.csv").orderBy("Country")
+# print(df4.count())
+# df4.show()
+mapping_data = [
+    ("U.S.A", "United States Of America"),
+    ("U.K.", "United Kingdom"),
+    ("U.A.E.", "United Arab Emirates")
+]
+mapping_columns = ["NonStandardName", "StandardName"]
+mapping_df = spark.createDataFrame(mapping_data, mapping_columns)
+# mapping_df.show(63)
+# Standardize country names in df4
+df4_sta = df4.join(mapping_df, df4["Country"] == mapping_df["NonStandardName"], "left_outer") \
+    .withColumn("StandardizedCountry", coalesce(col("StandardName"), col("Country"))) \
+    .drop("NonStandardName", "StandardName", "Country") \
+    .withColumnRenamed("StandardizedCountry", "Country") \
+     .orderBy("Country") \
+      .withColumnRenamed("Country","Country of Nationality")
+# print(df4_sta.count())
+# df4_sta.show(63)
+columns_rename_df3 = [f"total_{year}" for year in range(2014, 2021)]
+for old_col, new_col in zip(df4_sta.columns[:7], columns_rename_df3):
+    df4_sta = df4_sta.withColumnRenamed(old_col, new_col)
+# print(df4_sta.count())    
+# df4_sta.show(63)
+df564 = df5.join(df6, "Country of Nationality", "inner").orderBy("Country of Nationality")
+#print(df564.count())
+df564_id = df564.withColumn("country_id", monotonically_increasing_id()+1).orderBy("country_id")
+#print(df564_id.count())
+df4_sta = df4_sta.withColumn("country_id", monotonically_increasing_id()+1) \
+                    .orderBy("country_id") \
+                    .drop("Country of Nationality")
+#print(df4_sta.count())
+join3file = df564_id.join(df4_sta, "country_id","inner")
+# print(join3file.count())
+# join3file.show(63)
+years = range(2019, 2021)
+# print(list(years))
+for year in years:
+    
+    columns_df1 = [col_name for col_name in join3file.columns if str(year) in col_name]
+    # print(columns_df1)
+    total_col = f"total_{year}"
+    # print(total_col)
+    df_year = join3file.select(['Country of Nationality', 'country_id']+ columns_df1).dropDuplicates()
+    # df_year.show()
+    for column in df_year.columns:
+        # print(column)
+        if str(year) in column and column not in ['Country of Nationality', 'country_id', total_col]:
+            df_year = df_year.withColumn(column, F_round((F.col(column) / 100) * F.col(total_col), 1)) 
+    df_year = df_year.orderBy('Country of Nationality') 
+    df_year = df_year.withColumn("year", F.lit(year))
+    # df_year.show(63)
+    # df_year.write.option("header", "true").csv(f"s3://filecountry/{year}_airport.csv", mode='overwrite')
+
+
+
+    
+ 
+    
+
+
+    
+

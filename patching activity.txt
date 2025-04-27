@@ -1,0 +1,25 @@
+login with Pid ADM and changed to root user: 
+dzdo su - svc-spc for both kibana again use password to login
+-------stop--- -----
+1.to stop Elasticsearch:  we have 3 server to stop in DR & prod login to each server and follow the same for Es
+               cd /apps/spc/scripts/systemd/
+			   ./stopElasticSearch.sh  
+			   or directly use commond ---- sudo systemctl stop spc-es-9200
+			   check the respective link https://vm0rnspcesa0001.corp.chartercom.com:9200: to verify weather it is stoped or not
+               
+2. stop kibana server: login to cluster: dzdo su - svc-spc
+        cd /apps/spc/kibana/
+        pkill -F kibana.pid
+		or sudo systemctl stop spc-kibana
+		
+-------to start-------
+ 1. start kibana       
+        cd /apps/spc/kibana/bin
+        ./kibana &
+        Or
+        sudo systemctl start spc-kibana
+		
+2. start elasticseach: login to 3 cluster & start respectively
+        cd /apps/spc/elasticsearch/bin
+        ./elasticsearch -d -p pid
+		or sudo systemctl status spc-es-9200
